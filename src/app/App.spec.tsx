@@ -5,6 +5,6 @@ import { App } from './App';
 
 test('renders an element with class "tile"', () => {
   const { container } = render(<App />);
-  const tileElement = container.querySelector('.tile');
-  expect(tileElement).toBeInTheDocument();
+  const element = container.querySelector('.musicbox');
+  expect(element).toBeInTheDocument();
 });
