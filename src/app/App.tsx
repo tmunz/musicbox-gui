@@ -1,6 +1,6 @@
 import './App.styl';
 import React from 'react';
-import { Visualizer } from './Visualizer';
+import { Visualizer } from './visualizer/Visualizer';
 
 export function App() {
 
