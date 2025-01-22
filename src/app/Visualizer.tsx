@@ -5,7 +5,13 @@ export const Visualizer = ({ frequencyBands = 42, numberOfSamples = 16, border =
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationIdRef = useRef<number>(0);
-  const samples = useAudio(navigator.mediaDevices.getUserMedia({ audio: true }), frequencyBands, numberOfSamples);
+  let streamProvider: Promise<MediaStream> | null = null;
+  try {
+    streamProvider = navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (e) {
+    console.error(e);
+  }
+  const samples = useAudio(streamProvider, frequencyBands, numberOfSamples);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -21,7 +27,7 @@ export const Visualizer = ({ frequencyBands = 42, numberOfSamples = 16, border =
     }
 
     const getAmplitudeMultiplicator = (x: number) => {
-      return 50 * normalizedGaussian(x, 0.1);
+      return 25 * normalizedGaussian(x, 0.1);
     }
 
     const draw = () => {
@@ -36,7 +42,7 @@ export const Visualizer = ({ frequencyBands = 42, numberOfSamples = 16, border =
       const sliceWidth = w / (displaySamples - 1);
 
       for (let i = 0; i < frequencyBands; i++) {
-        const frequencyBaseY = h + 1.5 * border - verticalDistance * i;
+        const frequencyBaseY = h + 1.2 * border - verticalDistance * i;
 
         if (baseLine) {
           canvasContext.beginPath();

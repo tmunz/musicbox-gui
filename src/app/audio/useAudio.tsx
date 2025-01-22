@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { FixedSizeQueue } from '../utils/FixedSizeQueue';
 
-export const useAudio = (streamProvider: Promise<MediaStream>, frequencyBands: number = 32, samples = 1, hertz: number = 44100, fftSize: number = 2048) => {
+export const useAudio = (streamProvider: Promise<MediaStream> | null, frequencyBands: number = 32, samples = 1, hertz: number = 44100, fftSize: number = 2048) => {
   const audioDataRef = useRef<Uint8Array | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const audioFramesRef = useRef(new FixedSizeQueue<Uint8Array>(samples, new Uint8Array(fftSize).fill(128)));
@@ -10,6 +10,7 @@ export const useAudio = (streamProvider: Promise<MediaStream>, frequencyBands: n
     let audioContext: AudioContext | null = null;
 
     const initializeAudio = async () => {
+      if (!streamProvider) return;
       const stream = await streamProvider;
       audioContext = new AudioContext();
       const analyser = audioContext.createAnalyser();
