@@ -20,4 +20,12 @@ export class FixedSizeQueue<T> {
   get(i: number): T {
     return this.queue[i];
   }
+
+  getFullSize(): number {
+    return this.size;
+  }
+
+  getFillSize(): number {
+    return this.queue.length;
+  }
 }

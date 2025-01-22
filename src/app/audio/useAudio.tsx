@@ -42,7 +42,7 @@ export const useAudio = (streamProvider: Promise<MediaStream> | null, frequencyB
         }
         bands[i] = (sum / bandSize);
       }
-      return Uint8Array.from(audioDataRef.current);
+      return Uint8Array.from(bands);
     }
     return null;
   };
