@@ -19,10 +19,6 @@ export const UnknownPleasures = ({ samples, border = 50, baseLine = false }: { s
       return (1 / denominator) * exponent;
     }
 
-    const getAmplitudeMultiplicator = (x: number) => {
-      return 25 * normalizedGaussian(x, 0.1);
-    }
-
     const draw = () => {
       canvasContext.fillStyle = 'black';
       canvasContext.fillRect(0, 0, canvas.width, canvas.height);
@@ -52,7 +48,7 @@ export const UnknownPleasures = ({ samples, border = 50, baseLine = false }: { s
         canvasContext.lineWidth = 2;
         canvasContext.strokeStyle = 'white';
 
-        const line = [];
+        const line: [number, number][] = [];
 
         for (let t = 0; t < displaySamples; t++) {
           const audioData = samples.get(t);
@@ -61,10 +57,14 @@ export const UnknownPleasures = ({ samples, border = 50, baseLine = false }: { s
           line.push([x, v]);
         }
 
-        const mirrorLine = [...line.map(([x, v]) => [x / 2, v]), ...line.slice(0, -1).reverse().map(([x, v]) => [w - x / 2, v])]
-          .map(([x, v], i) => [x, frequencyBaseY - (v * getAmplitudeMultiplicator(i / (displaySamples * 2)))]);
+        const mirrorLine = [...line.map(([x, v]) => [x / 2, v]), ...line.slice(0, -1).reverse().map(([x, v]) => [w - x / 2, v])];
+        const vizualizationLine = mirrorLine.map(([x, v], i, arr) => {
+          const sampleDifferenceY = i === arr.length - 1 ? 0 : (20 * (v - line[Math.floor(i/2) - 1]?.[1] || 0));
+          const fadeOutY = v * 80 * normalizedGaussian(i / mirrorLine.length, 0.08);
+          return [x, frequencyBaseY - fadeOutY - sampleDifferenceY];
+        });
 
-        mirrorLine.forEach(([x, y], i) => {
+        vizualizationLine.forEach(([x, y], i) => {
           if (i === 0) {
             canvasContext.moveTo(x, y);
           } else {
