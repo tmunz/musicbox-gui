@@ -22,7 +22,7 @@ export const Visualizer = ({ frequencyBands = 42, numberOfSamples = 16, minFrequ
     <div className='visualizer' ref={dimensionRef} style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
       {/* TODO Element based on Router */}
       {
-        true
+        false
           ? <UnknownPleasures sampleProvider={sampleProvider} canvas={{ width, height }} />
           : <DarkSideOfTheMoon />
       }

@@ -1,8 +1,8 @@
+import React, { forwardRef, useRef } from 'react';
 import { extend, useFrame, useThree } from '@react-three/fiber';
 import { shaderMaterial } from '@react-three/drei';
-import React, { forwardRef, useRef } from 'react';
-import * as THREE from 'three';
 import { Object3DNode } from '@react-three/fiber/dist/declarations/src/three-types';
+import { Mesh, ShaderMaterial } from 'three';
 
 // Based on
 // "Improving the Rainbow" by Alan Zucconi: https://www.alanzucconi.com/2017/07/15/improving-the-rainbow-2/
@@ -92,7 +92,7 @@ extend({
 });
 
 
-interface RainbowMaterial{
+interface RainbowMaterial {
   time: number;
   speed: number;
   fade: number;
@@ -111,14 +111,14 @@ interface RainbowProps {
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      rainbowMaterial: Object3DNode<THREE.ShaderMaterial, typeof THREE.ShaderMaterial> & RainbowMaterial;
+      rainbowMaterial: Object3DNode<ShaderMaterial, typeof ShaderMaterial> & RainbowMaterial;
     }
   }
 }
 
-export const Rainbow = forwardRef<THREE.Mesh, RainbowProps>(
-  ({ startRadius = 0, endRadius = 0.5, emissiveIntensity = 2.5, fade = 0.25, ...props }, fRef) => {
-    const materialRef = useRef<RainbowMaterial>(null);
+export const Rainbow = forwardRef<Mesh, RainbowProps>(
+  ({ startRadius = 0, endRadius = 0.5, emissiveIntensity = 2.5, fade = 0.25, ...props }, ref) => {
+    const materialRef = useRef<RainbowMaterial | null>(null);
     const { width, height } = useThree((state) => state.viewport);
     const length = Math.hypot(width, height); // Add 1.5 due to the motion of the rainbow
 
@@ -129,7 +129,7 @@ export const Rainbow = forwardRef<THREE.Mesh, RainbowProps>(
     });
 
     return (
-      <mesh ref={fRef} scale={[length, length, 1]} {...props}>
+      <mesh ref={ref} scale={[length, length, 1]} {...props}>
         <planeGeometry />
         <rainbowMaterial
           ref={materialRef}

@@ -1,34 +1,33 @@
-import * as THREE from 'three';
-import { forwardRef, useRef, useMemo, useLayoutEffect, useImperativeHandle, ReactNode } from 'react';
+import React, { forwardRef, useRef, useMemo, useLayoutEffect, useImperativeHandle, ReactNode } from 'react';
 import { invalidate } from '@react-three/fiber';
-import React from 'react';
+import { Group, Intersection, Object3D, Raycaster, Vector3 } from 'three';
 
 // Type for ray-interactable objects
-interface RayMesh extends THREE.Object3D {
+interface RayMesh extends Object3D {
   isMesh: boolean;
   onRayOver?: (event: any) => void;
   onRayOut?: (event: any) => void;
   onRayMove?: (event: any) => void;
 }
 
-function isRayMesh(object: THREE.Object3D): object is RayMesh {
+function isRayMesh(object: Object3D): object is RayMesh {
   return (object as RayMesh).isMesh && !!((object as RayMesh).onRayOver || (object as RayMesh).onRayOut || (object as RayMesh).onRayMove);
 }
 
 // Type for the event created during ray interactions
 interface RayEvent {
   api: ReflectAPI;
-  object: THREE.Object3D;
-  position: THREE.Vector3;
-  direction?: THREE.Vector3;
-  reflect?: THREE.Vector3;
-  normal?: THREE.Vector3;
-  intersect: THREE.Intersection;
-  intersects: THREE.Intersection[];
+  object: Object3D;
+  position: Vector3;
+  direction?: Vector3;
+  reflect?: Vector3;
+  normal?: Vector3;
+  intersect: Intersection;
+  intersects: Intersection[];
   stopPropagation: () => void;
 }
 
-function createEvent(api: ReflectAPI, hit: Hit, intersect: THREE.Intersection, intersects: THREE.Intersection[]): RayEvent {
+function createEvent(api: ReflectApi, hit: Hit, intersect: Intersection, intersects: Intersection[]): RayEvent {
   return {
     api,
     object: intersect.object,
@@ -42,7 +41,6 @@ function createEvent(api: ReflectAPI, hit: Hit, intersect: THREE.Intersection, i
   };
 }
 
-// Type for the Reflect component's props
 interface ReflectProps {
   children?: ReactNode;
   start?: [number, number, number];
@@ -52,14 +50,13 @@ interface ReflectProps {
   [key: string]: any;
 }
 
-// Type for the API exposed by the Reflect component
-interface ReflectAPI {
+export interface ReflectApi {
   number: number;
-  objects: THREE.Object3D[];
+  objects: Object3D[];
   hits: Map<string, Hit>;
-  start: THREE.Vector3;
-  end: THREE.Vector3;
-  raycaster: THREE.Raycaster;
+  start: Vector3;
+  end: Vector3;
+  raycaster: Raycaster;
   positions: Float32Array;
   setRay: (start?: [number, number, number], end?: [number, number, number]) => void;
   update: () => number;
@@ -68,31 +65,31 @@ interface ReflectAPI {
 // Type for hits tracked by the API
 interface Hit {
   key: string;
-  intersect: THREE.Intersection;
+  intersect: Intersection;
   stopped: boolean;
 }
 
-export const Reflect = forwardRef<ReflectAPI, ReflectProps>(
+export const Reflect = forwardRef<ReflectApi, ReflectProps>(
   ({ children, start: _start = [0, 0, 0], end: _end = [0, 0, 0], bounce = 10, far = 100, ...props }, fRef) => {
     bounce = (bounce || 1) + 1;
 
-    const scene = useRef<THREE.Group>(null);
-    const vStart = new THREE.Vector3();
-    const vEnd = new THREE.Vector3();
-    const vDir = new THREE.Vector3();
-    const vPos = new THREE.Vector3();
+    const scene = useRef<Group>(null);
+    const vStart = new Vector3();
+    const vEnd = new Vector3();
+    const vDir = new Vector3();
+    const vPos = new Vector3();
 
-    let intersect: THREE.Intersection | null = null;
-    let intersects: THREE.Intersection[] = [];
+    let intersect: Intersection | null = null;
+    let intersects: Intersection[] = [];
 
-    const api = useMemo<ReflectAPI>(
+    const api = useMemo<ReflectApi>(
       () => ({
         number: 0,
         objects: [],
         hits: new Map(),
-        start: new THREE.Vector3(),
-        end: new THREE.Vector3(),
-        raycaster: new THREE.Raycaster(),
+        start: new Vector3(),
+        end: new Vector3(),
+        raycaster: new Raycaster(),
         positions: new Float32Array(Array.from({ length: (bounce + 10) * 3 }, () => 0)),
         setRay: (_start = [0, 0, 0], _end = [0, 0, 0]) => {
           api.start.set(..._start);
