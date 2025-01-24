@@ -1,4 +1,4 @@
-import { Point2 } from "./Point";
+import { Point2 } from './Point';
 
 export function distance(a: Point2, b: Point2): number {
   return Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);

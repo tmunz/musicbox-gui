@@ -4,7 +4,7 @@ export class FixedSizeQueue<T> {
 
   constructor(size: number, defaultValue: T) {
     if (size <= 0) {
-      throw new Error("Queue size must be greater than 0.");
+      throw new Error('Queue size must be greater than 0.');
     }
     this.size = size;
     this.queue = Array(size).fill(defaultValue);

@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from "react";
-import { Point2 } from "../../utils/Point";
-import { drawBezierCurve, smooth } from "../../utils/DrawUtils";
+import React, { useEffect, useRef } from 'react';
+import { Point2 } from '../../utils/Point';
+import { drawBezierCurve, smooth } from '../../utils/DrawUtils';
 
 export interface UnknownPleasuresCanvasProps {
   lines?: Point2[][];
@@ -30,4 +30,4 @@ export const UnknownPleasuresCanvas = ({ lines = [], width = 400, height = 600, 
   return (
     <div dangerouslySetInnerHTML={{ __html: svgContent }} />
   );
-}
+};

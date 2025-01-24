@@ -1,4 +1,4 @@
-import { RefObject, useEffect, useRef, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from 'react';
 
 export const useDimension = (elementRef: RefObject<HTMLElement>, animationThreshold = 0) => {
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -6,7 +6,7 @@ export const useDimension = (elementRef: RefObject<HTMLElement>, animationThresh
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver(entries => {
-      for (let entry of entries) {
+      for (const entry of entries) {
         if (entry.target instanceof HTMLElement) {
           const width = Math.floor(entry.target.offsetWidth);
           const height = Math.floor(entry.target.offsetHeight);
@@ -49,4 +49,4 @@ export const useDimension = (elementRef: RefObject<HTMLElement>, animationThresh
 
   return dimension;
 
-}
+};

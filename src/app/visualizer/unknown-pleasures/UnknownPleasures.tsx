@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from "react";
-import { FixedSizeQueue } from "../../utils/FixedSizeQueue";
-import { UnknownPleasuresCanvas, UnknownPleasuresCanvasProps } from "./UnknownPleasuresCanvas";
-import { Point2 } from "../../utils/Point";
+import React, { useEffect, useRef } from 'react';
+import { FixedSizeQueue } from '../../utils/FixedSizeQueue';
+import { UnknownPleasuresCanvas, UnknownPleasuresCanvasProps } from './UnknownPleasuresCanvas';
+import { Point2 } from '../../utils/Point';
 
 interface UnknownPleasuresProps {
   sampleProvider: FixedSizeQueue<Uint8Array>;
@@ -50,7 +50,7 @@ export const UnknownPleasures = ({ sampleProvider, canvas }: UnknownPleasuresPro
         line.push([...values, ...values.slice(0, -1).reverse()].map((v, j, arr) => {
           const frequencyBandsMultiplier = Math.pow((i + 1), 0.2); // lower frequency bands have generally higher values, so we dimm them a bit
           const value = Math.pow(v * frequencyBandsMultiplier, 1.5); // creates a threshold so small values are much less visible
-          const fadeOutMultiplier = gaussianDeviation(j / arr.length) // fades out older entries 
+          const fadeOutMultiplier = gaussianDeviation(j / arr.length); // fades out older entries 
           const fadeOutNoise = 0.8 + Math.random() * 0.2;
           const baseNoise = Math.random() * 0.05 - 0.025;
           return { x: l + j / 2 * dX, y: frequencyBaseY - value * sizeMultiplier * fadeOutMultiplier * fadeOutNoise + sizeMultiplier * baseNoise };
@@ -70,4 +70,4 @@ export const UnknownPleasures = ({ sampleProvider, canvas }: UnknownPleasuresPro
   return (
     <UnknownPleasuresCanvas {...canvas} lines={lines} />
   );
-}
+};

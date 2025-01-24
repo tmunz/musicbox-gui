@@ -3,6 +3,7 @@ import { useAudioAnalysis } from '../audio/useAudioAnalysis';
 import { UnknownPleasures } from './unknown-pleasures/UnknownPleasures';
 import { useAudioStream } from '../audio/useAudioStream';
 import { useDimension } from '../utils/useDimension';
+import DarkSideOfTheMoon from './dark-side-of-the-moon/DarkSideOfTheMoon';
 
 export const Visualizer = ({ frequencyBands = 42, numberOfSamples = 16, minFrequency = 10, maxFrequency = 10000 }) => {
 
@@ -19,7 +20,12 @@ export const Visualizer = ({ frequencyBands = 42, numberOfSamples = 16, minFrequ
 
   return (
     <div className='visualizer' ref={dimensionRef} style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
-      <UnknownPleasures sampleProvider={sampleProvider} canvas={{ width, height }} />
+      {/* TODO Element based on Router */}
+      {
+        true
+          ? <UnknownPleasures sampleProvider={sampleProvider} canvas={{ width, height }} />
+          : <DarkSideOfTheMoon />
+      }
     </div>
-  )
+  );
 };
