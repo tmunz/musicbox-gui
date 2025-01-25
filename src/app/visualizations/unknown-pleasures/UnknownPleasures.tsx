@@ -41,7 +41,7 @@ export const UnknownPleasures = ({ sampleProvider, canvas }: UnknownPleasuresPro
         const frequencyBaseY = h + border - verticalDistance * i;
         const values: number[] = [];
 
-        for (let t = 0; t < displaySamples; t++) {
+        for (let t = displaySamples - 1; t >= 0; t--) {
           const audioData = sampleProvider.get(t);
           const v = audioData ? audioData[i] / 255 : 0;
           values.push(v);
