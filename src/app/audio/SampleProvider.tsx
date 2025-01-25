@@ -13,16 +13,18 @@ interface AudioProviderProps {
 
 export const SampleProvider = ({ onSampleProviderChange, frequencyBands = 42, numberOfSamples = 16, minFrequency = 10, maxFrequency = 10000 }: AudioProviderProps) => {
 
-  const handleStreamProviderChange = (streamProvider: Promise<MediaStream>) => {
-    onSampleProviderChange(useAudioAnalysis(streamProvider, frequencyBands, numberOfSamples, minFrequency, maxFrequency));
-  }
+  const [streamProvider, setStreamProvider] = React.useState<Promise<MediaStream>>(new Promise(() => { }));
+  const sampleProvider = useAudioAnalysis(streamProvider, frequencyBands, numberOfSamples, minFrequency, maxFrequency);
 
   // TODO add settings for frequency bands, number of samples, min and max frequency
 
   return (
     <div>
       <h1>Audio Settings</h1>
-      <AudioProvider onChange={handleStreamProviderChange} />
+      <AudioProvider onChange={(sp) => {
+        setStreamProvider(sp);
+        onSampleProviderChange(sampleProvider);
+      }} />
     </div>
   );
 }

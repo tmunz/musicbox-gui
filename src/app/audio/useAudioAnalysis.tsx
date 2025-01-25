@@ -12,15 +12,19 @@ export const useAudioAnalysis = (streamProvider: Promise<MediaStream> | null, fr
     let audioContext: AudioContext | null = null;
 
     const initializeAudio = async () => {
-      if (!streamProvider) return;
-      const stream = await streamProvider;
-      audioContext = new AudioContext();
-      const analyser = audioContext.createAnalyser();
-      analyser.fftSize = fftSize;
-      const source = audioContext.createMediaStreamSource(stream);
-      source.connect(analyser);
-      analyserRef.current = analyser;
-      audioDataRef.current = new Uint8Array(analyser.frequencyBinCount);
+      const streamSource = await streamProvider;
+      if (streamSource) {
+        audioContext = new AudioContext();
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = fftSize;
+        const source = audioContext.createMediaStreamSource(streamSource);
+        source.connect(analyser);
+        analyserRef.current = analyser;
+        audioDataRef.current = new Uint8Array(analyser.frequencyBinCount);
+      } else {
+        analyserRef.current = null;
+        audioDataRef.current = null;
+      }
     };
 
     initializeAudio();
@@ -60,6 +64,8 @@ export const useAudioAnalysis = (streamProvider: Promise<MediaStream> | null, fr
       const audioData = getFrequencyData();
       if (audioData) {
         audioFramesRef.current.push(audioData);
+      } else {
+        audioFramesRef.current.push(new Uint8Array(frequencyBands).fill(0));
       }
     }, interval);
     return () => {

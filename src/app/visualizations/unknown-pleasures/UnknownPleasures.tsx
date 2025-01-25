@@ -23,8 +23,8 @@ export const UnknownPleasures = ({ sampleProvider, canvas }: UnknownPleasuresPro
     const convertSamplesToPoints = () => {
       const width = canvas?.width ?? 400;
       const height = canvas?.height ?? 600;
-      const border = 200;
       const d = Math.min(width, height);
+      const border = d * 0.2;
       const h = d - 2 * border;
       const w = h * 3 / 4;
       const l = (width - w) / 2;

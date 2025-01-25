@@ -1,33 +1,63 @@
 import React from "react";
-import { useAudioStream } from "./useAudioStream";
+import { useAudio } from "./useAudio";
 
 interface AudioProviderProps {
-  onChange: (stream: Promise<MediaStream>) => void;
+  onChange: (stream: Promise<MediaStream | null>) => void;
 }
 
 export const AudioProvider = ({ onChange }: AudioProviderProps) => {
+  const [audioPlayer, setAudioPlayer] = React.useState<HTMLAudioElement | null>(null);
+  const [currentStream, setCurrentStream] = React.useState<MediaStream | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const getMicrophoneStream = () => {
+  const changeToMicrophone = async () => {
     try {
-      return navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setCurrentStream(stream);
+      onChange(Promise.resolve(stream));
+      setError(null);
     } catch (e) {
-      return Promise.reject(e);
+      setError("Unable to access microphone: " + (e as Error).message);
     }
-  }
+  };
 
-  const getAudioStream = (url: string = 'https://rautemusik.stream25.radiohost.de/rm-80s_mp3-192') => {
+  const changeToUrlStream = async (url: string = 'https://rautemusik.stream25.radiohost.de/rm-80s_mp3-192') => {
     try {
-      return useAudioStream(url);
+      const { stream, audio } = await useAudio(url);
+      setCurrentStream(stream);
+      setAudioPlayer(audio);
+      audio.play();
+      onChange(Promise.resolve(stream));
+      setError(null);
     } catch (e) {
-      return Promise.reject(e);
+      setError("Unable to fetch audio stream: " + (e as Error).message);
     }
-  }
+  };
+
+  const stop = () => {
+    if (currentStream) {
+      currentStream.getTracks().forEach(track => track.stop());
+      setCurrentStream(null);
+      onChange(Promise.resolve(null));
+      setError(null);
+    }
+    if (audioPlayer) {
+      audioPlayer.pause();
+      audioPlayer.src = "";
+      setAudioPlayer(null);
+    }
+  };
 
   return (
     <div>
       <h2>Audio Provider</h2>
-      <button onClick={() => onChange(getMicrophoneStream())}>Microphone</button>
-      <button onClick={() => onChange(getAudioStream())}>Audio</button>
+      <div>
+        <button onClick={() => { stop(); changeToMicrophone(); }}>Microphone</button>
+        <button onClick={() => { stop(); changeToUrlStream() }}>Audio</button>
+        <button onClick={stop} disabled={!currentStream}>Stop</button>
+      </div>
+      {currentStream && <p>Audio stream is active.</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
-}
+};

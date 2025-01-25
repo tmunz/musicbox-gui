@@ -32,12 +32,14 @@ export function DarkSideOfTheMoon({ sampleProvider, canvas }: DarkSideOfTheMoonP
 }
 
 function Scene() {
+  const [isInit, setIsInit] = useState(true);
   const [isPrismHit, hitPrism] = useState(false);
   const ambientRef = useRef<AmbientLight | null>(null);
   const spotRef = useRef<SpotLight | null>(null);
   const flareRef = useRef<Group | null>(null);
   const beamRef = useRef<Mesh | null>(null);
   const rainbowRef = useRef<Mesh | null>(null);
+  const vec = new Vector3();
 
   const rayOut = useCallback(() => hitPrism(false), []);
   const rayOver = useCallback((e) => {
@@ -47,7 +49,7 @@ function Scene() {
     rainbowRef.current.material.emissiveIntensity = 20;
   }, []);
 
-  const vec = new Vector3();
+
   const rayMove = useCallback(({ api, position, direction, normal }: { api: ReflectApi, position: Vector3, direction: Point2, normal: Point2 }) => {
     if (!normal || !flareRef.current || !rainbowRef.current || !spotRef.current) return;
     vec.toArray(api.positions, api.number++ * 3);
@@ -63,9 +65,12 @@ function Scene() {
     spotRef.current.target.updateMatrixWorld();
   }, []);
 
-  useFrame((state) => {
+  useFrame(({ pointer, viewport }) => {
     if (!beamRef.current || !rainbowRef.current || !ambientRef.current) return;
-    beamRef.current.setRay([(state.pointer.x * state.viewport.width) / 2, (state.pointer.y * state.viewport.height) / 2, 0], [0, 0, 0]);
+    if (pointer.x !== 0 || pointer.y !== 0) setIsInit(false);
+    const x = ((isInit ? -1 : pointer.x) * viewport.width) / 2;
+    const y = ((isInit ? -0.45 : pointer.y) * viewport.height) / 2;
+    beamRef.current.setRay([x, y, 0], [0, 0, 0]);
     lerp(rainbowRef.current.material, 'emissiveIntensity', isPrismHit ? 2.5 : 0, 0.1);
     spotRef.current.intensity = rainbowRef.current.material.emissiveIntensity;
     lerp(ambientRef.current, 'intensity', 0, 0.025);
