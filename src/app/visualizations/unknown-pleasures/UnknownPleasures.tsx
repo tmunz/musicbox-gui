@@ -3,9 +3,9 @@ import { FixedSizeQueue } from '../../utils/FixedSizeQueue';
 import { UnknownPleasuresCanvas, UnknownPleasuresCanvasProps } from './UnknownPleasuresCanvas';
 import { Point2 } from '../../utils/Point';
 
-interface UnknownPleasuresProps {
+export interface UnknownPleasuresProps {
   sampleProvider: FixedSizeQueue<Uint8Array>;
-  canvas: UnknownPleasuresCanvasProps;
+  canvas?: UnknownPleasuresCanvasProps;
 }
 
 export const UnknownPleasures = ({ sampleProvider, canvas }: UnknownPleasuresProps) => {
@@ -21,8 +21,8 @@ export const UnknownPleasures = ({ sampleProvider, canvas }: UnknownPleasuresPro
 
   useEffect(() => {
     const convertSamplesToPoints = () => {
-      const width = canvas.width ?? 400;
-      const height = canvas.height ?? 600;
+      const width = canvas?.width ?? 400;
+      const height = canvas?.height ?? 600;
       const border = 200;
       const d = Math.min(width, height);
       const h = d - 2 * border;
@@ -65,7 +65,7 @@ export const UnknownPleasures = ({ sampleProvider, canvas }: UnknownPleasuresPro
     return () => {
       cancelAnimationFrame(animationIdRef.current);
     };
-  }, [sampleProvider, canvas.width, canvas.height]);
+  }, [sampleProvider, canvas?.width, canvas?.height]);
 
   return (
     <UnknownPleasuresCanvas {...canvas} lines={lines} />

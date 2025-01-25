@@ -1,0 +1,8 @@
+button {
+  cursor: pointer;
+
+  &:hover {
+    backdrop-filter: brightness(150%);
+  }
+
+}

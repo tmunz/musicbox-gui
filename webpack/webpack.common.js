@@ -23,7 +23,7 @@ module.exports = (env) => ({
       test: /\.jpe?g$|\.gif$|\.png$/i,
       type: 'asset/resource',
     }, {
-      test: /\.css$|\.styl$/,
+      test: /\.css$/,
       use: [
         'style-loader',
         'css-loader',
@@ -42,7 +42,6 @@ module.exports = (env) => ({
             },
           },
         },
-        'stylus-loader'
       ],
     }
     ]

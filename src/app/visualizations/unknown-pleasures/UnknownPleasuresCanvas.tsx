@@ -1,11 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Point2 } from '../../utils/Point';
-import { drawBezierCurve, smooth } from '../../utils/DrawUtils';
+import { drawBezierCurve, smooth } from '../../utils/SvgUtils';
 
 export interface UnknownPleasuresCanvasProps {
   lines?: Point2[][];
-  width: number;
-  height: number;
+  width?: number;
+  height?: number;
   color?: string;
   backgroundColor?: string;
   smoothness?: number;

@@ -10,9 +10,14 @@ import { calculateRefractionAngle, lerp, lerpV3 } from './Util';
 import { Rainbow } from './components/Rainbow';
 import { ReflectApi } from './components/Reflect';
 import { Point2 } from '../../utils/Point';
+import { FixedSizeQueue } from '../../utils/FixedSizeQueue';
 
+export interface DarkSideOfTheMoonProps {
+  sampleProvider: FixedSizeQueue<Uint8Array>;
+  canvas: { width: number, height: number }
+}
 
-export default function DarkSideOfTheMoon() {
+export function DarkSideOfTheMoon({ sampleProvider, canvas }: DarkSideOfTheMoonProps) {
   const texture = useLoader(LUTCubeLoader, require('./assets/F-6800-STD.cube')) as unknown as Texture;
   return (
     <Canvas orthographic gl={{ antialias: false }} camera={{ position: [0, 0, 100], zoom: 70 }}>
