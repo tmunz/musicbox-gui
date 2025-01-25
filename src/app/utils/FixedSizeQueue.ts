@@ -1,3 +1,8 @@
+/**
+ * A fixed-size circular queue that maintains a constant size.
+ * New items are added to the front of the queue, and the oldest items are
+ * removed automatically when the queue exceeds its maximum size.
+ */
 export class FixedSizeQueue<T> {
   private queue: T[];
   private size: number;
@@ -11,9 +16,9 @@ export class FixedSizeQueue<T> {
   }
 
   push(item: T): void {
-    this.queue.push(item);
+    this.queue.unshift(item);
     if (this.queue.length > this.size) {
-      this.queue.shift();
+      this.queue.pop();
     }
   }
   

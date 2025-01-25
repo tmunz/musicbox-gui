@@ -35,16 +35,16 @@ export const AudioProvider = ({ onChange }: AudioProviderProps) => {
   };
 
   const stop = () => {
+    if (audioPlayer) {
+      audioPlayer.pause();
+      audioPlayer.src = "";
+      setAudioPlayer(null);
+    }
     if (currentStream) {
       currentStream.getTracks().forEach(track => track.stop());
       setCurrentStream(null);
       onChange(Promise.resolve(null));
       setError(null);
-    }
-    if (audioPlayer) {
-      audioPlayer.pause();
-      audioPlayer.src = "";
-      setAudioPlayer(null);
     }
   };
 

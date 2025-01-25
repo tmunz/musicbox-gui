@@ -1,7 +1,7 @@
 import React, { useRef, useCallback, useState } from 'react';
-import { Canvas, useLoader, useFrame } from '@react-three/fiber';
+import { Canvas, useLoader, useFrame, Size } from '@react-three/fiber';
 import { Bloom, EffectComposer, LUT } from '@react-three/postprocessing';
-import { AmbientLight, Group, Mesh, SpotLight, Texture, Vector3 } from 'three';
+import { AmbientLight, Group, Mesh, SpotLight, Texture, Vector2, Vector3 } from 'three';
 import { LUTCubeLoader } from 'postprocessing';
 import { Beam } from './components/Beam';
 import { Prism } from './components/Prism';
@@ -22,7 +22,7 @@ export function DarkSideOfTheMoon({ sampleProvider, canvas }: DarkSideOfTheMoonP
   return (
     <Canvas orthographic gl={{ antialias: false }} camera={{ position: [0, 0, 100], zoom: 70 }}>
       <color attach="background" args={['black']} />
-      <Scene />
+      <Scene sampleProvider={sampleProvider} />
       <EffectComposer>
         <Bloom mipmapBlur levels={9} intensity={1.5} luminanceThreshold={1} luminanceSmoothing={1} />
         <LUT lut={texture} />
@@ -31,7 +31,7 @@ export function DarkSideOfTheMoon({ sampleProvider, canvas }: DarkSideOfTheMoonP
   );
 }
 
-function Scene() {
+function Scene({ sampleProvider }: { sampleProvider?: FixedSizeQueue<Uint8Array> }) {
   const [isInit, setIsInit] = useState(true);
   const [isPrismHit, hitPrism] = useState(false);
   const ambientRef = useRef<AmbientLight | null>(null);
@@ -65,12 +65,25 @@ function Scene() {
     spotRef.current.target.updateMatrixWorld();
   }, []);
 
+  const getInputPosition = (pointer: Vector2, viewport: Size) => {
+    if (sampleProvider) {
+      const currentSample = sampleProvider.get(0);
+      const currentSampleAvg = currentSample.reduce((acc, num) => acc + num, 0) / currentSample.length;
+      const x = -1 * (1 - (currentSampleAvg / 255)) * viewport.width / 2;
+      const y = -0.45 * (1 + (sampleProvider.get(0)[5] / 255)) * viewport.height / 2;
+      return [x, y, 0];
+    } else {
+      if (pointer.x !== 0 || pointer.y !== 0) setIsInit(false);
+      const x = (isInit ? -1 : pointer.x) * viewport.width / 2;
+      const y = (isInit ? -0.45 : pointer.y) * viewport.height / 2;
+      return [x, y, 0];
+    }
+
+  }
+
   useFrame(({ pointer, viewport }) => {
     if (!beamRef.current || !rainbowRef.current || !ambientRef.current) return;
-    if (pointer.x !== 0 || pointer.y !== 0) setIsInit(false);
-    const x = ((isInit ? -1 : pointer.x) * viewport.width) / 2;
-    const y = ((isInit ? -0.45 : pointer.y) * viewport.height) / 2;
-    beamRef.current.setRay([x, y, 0], [0, 0, 0]);
+    beamRef.current.setRay(getInputPosition(pointer, viewport), [0, 0, 0]);
     lerp(rainbowRef.current.material, 'emissiveIntensity', isPrismHit ? 2.5 : 0, 0.1);
     spotRef.current.intensity = rainbowRef.current.material.emissiveIntensity;
     lerp(ambientRef.current, 'intensity', 0, 0.025);
