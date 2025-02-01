@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { FixedSizeQueue } from '../../utils/FixedSizeQueue';
+import { FixedSizeQueue } from '../../../utils/FixedSizeQueue';
 import { UnknownPleasuresCanvas, UnknownPleasuresCanvasProps } from './UnknownPleasuresCanvas';
-import { Point2 } from '../../utils/Point';
+import { Point2 } from '../../../utils/Point';
 
 export interface UnknownPleasuresProps {
   sampleProvider: FixedSizeQueue<Uint8Array>;

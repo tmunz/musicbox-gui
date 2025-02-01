@@ -4,8 +4,10 @@ import { DarkSideOfTheMoon } from "./DarkSideOfTheMoon";
 const darkSideOfTheMoon: Visualization = {
   id: 'dark-side-of-the-moon',
   title: 'Dark Side of the Moon',
+  artist: 'Pink Floyd',
+  design: 'Storm Thorgerson (Hipgnosis)',
   imgSrc: 'https://upload.wikimedia.org/wikipedia/en/3/3b/Dark_Side_of_the_Moon.png',
-  description: 'The Dark Side of the Moon is the eighth studio album by the English rock band Pink Floyd, released on 1 March 1973 by Harvest Records. Primarily developed during live performances, the band premiered an early version of the record several months before recording began. New material was recorded in two sessions in 1972 and 1973 at Abbey Road Studios in London.',
+  description: "'The Dark Side of the Moon' is the eighth studio album by the English rock band Pink Floyd, released on March 1, 1973, by Harvest Records. It topped the US Billboard 200 and remained on the chart for an astonishing 741 weeks, from 1973 to 1988. This album's iconic cover is just one of the countless masterpieces created by the design group Hipgnosis, whose work is brilliantly documented in Anton Corbijn's film 'Squaring the Circle'.",
   component: DarkSideOfTheMoon,
 };
 

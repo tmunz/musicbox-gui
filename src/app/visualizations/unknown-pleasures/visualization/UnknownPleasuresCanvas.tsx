@@ -1,6 +1,6 @@
 import React from 'react';
-import { Point2 } from '../../utils/Point';
-import { drawBezierCurve, smooth } from '../../utils/SvgUtils';
+import { Point2 } from '../../../utils/Point';
+import { drawBezierCurve, smooth } from '../../../utils/SvgUtils';
 
 export interface UnknownPleasuresCanvasProps {
   lines?: Point2[][];

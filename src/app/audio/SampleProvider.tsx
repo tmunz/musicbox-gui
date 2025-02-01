@@ -1,30 +1,25 @@
 import React from "react";
 import { useAudioAnalysis } from "./useAudioAnalysis";
-import { AudioProvider } from "./AudioProvider";
+import { Audio } from "./Audio";
 import { FixedSizeQueue } from "../utils/FixedSizeQueue";
 
-interface AudioProviderProps {
+interface SampleProviderProps {
   onSampleProviderChange: (sampleProvider: FixedSizeQueue<Uint8Array>) => void;
   frequencyBands?: number;
-  numberOfSamples?: number;
+  sampleSize?: number;
   minFrequency?: number;
   maxFrequency?: number;
 }
 
-export const SampleProvider = ({ onSampleProviderChange, frequencyBands = 42, numberOfSamples = 16, minFrequency = 10, maxFrequency = 10000 }: AudioProviderProps) => {
+export const SampleProvider = ({ onSampleProviderChange, frequencyBands = 42, sampleSize = 16, minFrequency = 10, maxFrequency = 10000 }: SampleProviderProps) => {
 
   const [streamProvider, setStreamProvider] = React.useState<Promise<MediaStream | null>>(new Promise(() => { }));
-  const sampleProvider = useAudioAnalysis(streamProvider, frequencyBands, numberOfSamples, minFrequency, maxFrequency);
-
-  // TODO add settings for frequency bands, number of samples, min and max frequency
+  const sampleProvider = useAudioAnalysis(streamProvider, frequencyBands, sampleSize, minFrequency, maxFrequency);
 
   return (
-    <div>
-      <h1>Audio Settings</h1>
-      <AudioProvider onChange={(sp) => {
-        setStreamProvider(sp);
-        onSampleProviderChange(sampleProvider);
-      }} />
-    </div>
+    <Audio onChange={(sp) => {
+      setStreamProvider(sp);
+      onSampleProviderChange(sampleProvider);
+    }} />
   );
 }

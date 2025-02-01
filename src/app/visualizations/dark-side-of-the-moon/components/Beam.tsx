@@ -1,7 +1,7 @@
 import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
-import { Reflect, ReflectAPI } from './Reflect';
+import { Reflect, ReflectApi } from './Reflect';
 import { AdditiveBlending, DynamicDrawUsage, InstancedMesh, Object3D, Vector3 } from 'three';
 
 interface BeamProps {
@@ -14,7 +14,7 @@ interface BeamProps {
 export const Beam = forwardRef(({ children, position, stride = 4, width = 8, ...props }: BeamProps, fRef) => {
   const streaksRef = useRef<InstancedMesh>(null);
   const glowRef = useRef<InstancedMesh>(null);
-  const reflectRef = useRef<ReflectAPI>(null);
+  const reflectRef = useRef<ReflectApi>(null);
   const [streakTexture, glowRefTexture] = useTexture([require('../assets/lensflare/lensflare2.png'), require('../assets/lensflare/lensflare0_bw.jpg')]);
 
   const obj = new Object3D();
@@ -41,11 +41,6 @@ export const Beam = forwardRef(({ children, position, stride = 4, width = 8, ...
 
     streaksRef.current.count = range;
     streaksRef.current.instanceMatrix.needsUpdate = true;
-
-    // First glowRef isn't shown
-    obj.scale.setScalar(0);
-    obj.updateMatrix();
-    glowRef.current.setMatrixAt(0, obj.matrix);
 
     for (i = 1; i < range; i++) {
       obj.position.fromArray(reflectRef.current.positions, i * 3);

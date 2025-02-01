@@ -1,0 +1,35 @@
+.menubar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  justify-content: end;
+  justify-items: center;
+  align-items: end;
+  color: white;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  transform: translateY(0);
+  opacity: 1;
+  z-index: 1000;
+  pointer-events: none;
+  
+  &.hidden {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  &>* {
+    pointer-events: all;
+    padding: 1rem;
+
+    &:first-child {
+      justify-self: start;
+    }
+
+    &:last-child {
+      justify-self: end;
+    }
+  }
+}
