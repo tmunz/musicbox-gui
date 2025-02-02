@@ -1,6 +1,6 @@
 import { Settings, SettingType } from "../settings/Setting";
 
-const sampleSettings: Settings = {
+export const createSampleSettings = (frequencyBands = 32, sampleSize = 1, minFrequency = 10, maxFrequency = 10000): Settings => ({
   frequencyBands: {
     id: 'frequencyBands',
     name: 'Frequency Bands',
@@ -11,7 +11,7 @@ const sampleSettings: Settings = {
       max: 1024,
       step: 1
     },
-    value: 42
+    value: frequencyBands
   },
   sampleSize: {
     id: 'sampleSize',
@@ -23,7 +23,7 @@ const sampleSettings: Settings = {
       max: 1024,
       step: 1
     },
-    value: 16
+    value: sampleSize
   },
   minFrequency: {
     id: 'minFrequency',
@@ -35,7 +35,7 @@ const sampleSettings: Settings = {
       max: 22000,
       step: 1
     },
-    value: 10
+    value: minFrequency
   },
   maxFrequency: {
     id: 'maxFrequency',
@@ -47,8 +47,8 @@ const sampleSettings: Settings = {
       max: 22050,
       step: 1
     },
-    value: 10000
+    value: maxFrequency
   }
-};
+});
 
-export default sampleSettings;
+export default createSampleSettings();

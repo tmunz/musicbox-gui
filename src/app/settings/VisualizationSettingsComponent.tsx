@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { PiSlidersHorizontalDuotone } from 'react-icons/pi';
-import { useSettings } from './SettingsContext';
-export const AppSettingsComponent = () => {
+import { SettingsAction, useSettings } from './VisualizationSettingsContext';
+
+
+export const VisualizationSettingsComponent = () => {
 
   const [showSettings, setShowSettings] = useState(false);
   const { settings, dispatch } = useSettings();
 
   return <div className='app-settings'>{
     showSettings ? (
-      <div className='app-settings'>
+      <div>
         <button onClick={() => setShowSettings(false)}>
           Close
         </button>
@@ -21,7 +23,7 @@ export const AppSettingsComponent = () => {
                 <input
                   type='number'
                   value={setting.value}
-                  onChange={(e) => dispatch({ type: 'UPDATE_SETTING', section: sectionKey, key, value: e.target.value })}
+                  onChange={(e) => dispatch({ type: SettingsAction.UPDATE_SETTING, section: sectionKey, key, value: +e.target.value })}
                   min={setting.params?.min}
                   max={setting.params?.max}
                   step={setting.params?.step}

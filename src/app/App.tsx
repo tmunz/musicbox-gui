@@ -8,17 +8,15 @@ import { Visualization } from './visualizations/Visualization';
 import visualizations from './visualizations';
 import { VisualizationSelector } from './visualizations/VisualizationSelector';
 import { Menubar } from './ui/Menubar';
-import { AppSettingsComponent } from './settings/AppSettingsComponent';
-import { useSettings } from './settings/SettingsContext';
+import { VisualizationSettingsComponent } from './settings/VisualizationSettingsComponent';
+import { SettingsAction, useSettings } from './settings/VisualizationSettingsContext';
 
 export function App() {
   const elementRef = useRef<HTMLDivElement>(null);
   const { width, height } = useDimension(elementRef) ?? { width: 0, height: 0 };
-  const { settings } = useSettings();
+  const { settings, dispatch } = useSettings();
   const [selectedVisualization, setSelectedVisualization] = React.useState<Visualization>(visualizations[0]);
-  const [sampleProvider, setSampleProvider] = React.useState<FixedSizeQueue<Uint8Array>>(
-    new FixedSizeQueue<Uint8Array>(16, new Uint8Array(42))
-  );
+  const [sampleProvider, setSampleProvider] = React.useState<FixedSizeQueue<Uint8Array>>(new FixedSizeQueue<Uint8Array>(1, new Uint8Array()));
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -34,7 +32,9 @@ export function App() {
     }
   }, [location.pathname, navigate]);
 
-
+  useEffect(() => {
+    dispatch({ type: SettingsAction.SET_SETTINGS, newSettings: selectedVisualization.settings });
+  }, [selectedVisualization]);
 
   const selectVisualization = (id: string) => {
     const vis = visualizations.find((v) => v.id === id);
@@ -50,17 +50,18 @@ export function App() {
 
   return (
     <div className='musicbox' ref={elementRef} style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
-      <selectedVisualization.component sampleProvider={sampleProvider} canvas={{ width, height }} />
+      <selectedVisualization.component
+        sampleProvider={sampleProvider}
+        canvas={{ width, height }}
+        {...Object.fromEntries(Object.entries(settings?.visualization || {}).map(([key, setting]) => [key, setting.value]))}
+      />
       <Menubar hideTimeout={3000}>
         <VisualizationSelector visualizations={visualizations} onSelect={selectVisualization} selectedId={selectedVisualization?.id} />
         <SampleProvider
           onSampleProviderChange={setSampleProvider}
-          frequencyBands={settings.samples.frequencyBands.value}
-          sampleSize={settings.samples.sampleSize.value}
-          minFrequency={settings.samples.minFrequency.value}
-          maxFrequency={settings.samples.maxFrequency.value}
+          {...Object.fromEntries(Object.entries(settings?.samples || {}).map(([key, setting]) => [key, setting.value]))}
         />
-        <AppSettingsComponent />
+        <VisualizationSettingsComponent />
       </Menubar>
     </div>
   );

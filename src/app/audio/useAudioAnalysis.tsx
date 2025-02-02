@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FixedSizeQueue } from '../utils/FixedSizeQueue';
 
 export const useAudioAnalysis = (streamProvider: Promise<MediaStream | null>, frequencyBands = 32, sampleSize = 1,
@@ -6,7 +6,7 @@ export const useAudioAnalysis = (streamProvider: Promise<MediaStream | null>, fr
 
   const audioDataRef = useRef<Uint8Array | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const audioFramesRef = useRef(new FixedSizeQueue<Uint8Array>(sampleSize, new Uint8Array(frequencyBands).fill(0)));
+  const [audioFrames, setAudioFrames] = useState(new FixedSizeQueue<Uint8Array>(sampleSize, new Uint8Array(frequencyBands).fill(0)));
 
   useEffect(() => {
     let audioContext: AudioContext | null = null;
@@ -32,7 +32,7 @@ export const useAudioAnalysis = (streamProvider: Promise<MediaStream | null>, fr
     return () => {
       audioContext?.close();
     };
-  }, [streamProvider, fftSize, frequencyBands]);
+  }, [streamProvider, fftSize]);
 
   const getFrequencyData = () => {
     if (analyserRef.current && audioDataRef.current) {
@@ -59,19 +59,23 @@ export const useAudioAnalysis = (streamProvider: Promise<MediaStream | null>, fr
   };
 
   useEffect(() => {
+    setAudioFrames(new FixedSizeQueue<Uint8Array>(sampleSize, new Uint8Array(frequencyBands).fill(0)));
+  }, [sampleSize, frequencyBands, minFrequency, maxFrequency]);
+
+  useEffect(() => {
     const interval = sampleRate / fftSize;
     const intervalId = setInterval(() => {
       const audioData = getFrequencyData();
       if (audioData) {
-        audioFramesRef.current.push(audioData);
+        audioFrames.push(audioData);
       } else {
-        audioFramesRef.current.push(new Uint8Array(frequencyBands).fill(0));
+        audioFrames.push(new Uint8Array(frequencyBands).fill(0));
       }
     }, interval);
     return () => {
       clearInterval(intervalId);
     };
-  }, [getFrequencyData, sampleRate, fftSize, frequencyBands]);
+  }, [audioFrames, sampleRate, fftSize, frequencyBands, minFrequency, maxFrequency]);
 
-  return audioFramesRef.current;
+  return audioFrames;
 };

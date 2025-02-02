@@ -3,7 +3,7 @@ import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { SettingsProvider } from './app/settings/SettingsContext';
+import { SettingsProvider } from './app/settings/VisualizationSettingsContext';
 
 const appElement = document.getElementById('app');
 if (appElement) {

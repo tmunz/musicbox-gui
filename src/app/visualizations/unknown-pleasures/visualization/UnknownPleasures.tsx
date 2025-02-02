@@ -6,9 +6,10 @@ import { Point2 } from '../../../utils/Point';
 export interface UnknownPleasuresProps {
   sampleProvider: FixedSizeQueue<Uint8Array>;
   canvas?: UnknownPleasuresCanvasProps;
+  noise?: number;
 }
 
-export const UnknownPleasures = ({ sampleProvider, canvas }: UnknownPleasuresProps) => {
+export const UnknownPleasures = ({ sampleProvider, canvas, noise = 0.2 }: UnknownPleasuresProps) => {
 
   const animationIdRef = useRef<number>(0);
   const [lines, setLines] = React.useState<Point2[][]>([]);
@@ -51,8 +52,8 @@ export const UnknownPleasures = ({ sampleProvider, canvas }: UnknownPleasuresPro
           const frequencyBandsMultiplier = Math.pow((i + 1), 0.2); // lower frequency bands have generally higher values, so we dimm them a bit
           const value = Math.pow(v * frequencyBandsMultiplier, 1.5); // creates a threshold so small values are much less visible
           const fadeOutMultiplier = gaussianDeviation(j / arr.length); // fades out older entries 
-          const fadeOutNoise = 0.8 + Math.random() * 0.2;
-          const baseNoise = Math.random() * 0.05 - 0.025;
+          const fadeOutNoise = (1 - noise) + Math.random() * noise;
+          const baseNoise = (Math.random() - 0.5) * noise / 4;
           return { x: l + j / 2 * dX, y: frequencyBaseY - value * sizeMultiplier * fadeOutMultiplier * fadeOutNoise + sizeMultiplier * baseNoise };
         }));
       }
@@ -65,7 +66,7 @@ export const UnknownPleasures = ({ sampleProvider, canvas }: UnknownPleasuresPro
     return () => {
       cancelAnimationFrame(animationIdRef.current);
     };
-  }, [sampleProvider, canvas?.width, canvas?.height]);
+  }, [sampleProvider, canvas?.width, canvas?.height, noise]);
 
   return (
     <UnknownPleasuresCanvas {...canvas} lines={lines} />

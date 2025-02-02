@@ -5,6 +5,9 @@ export function distance(a: Point2, b: Point2): number {
 }
 
 export function smooth(pnts: Point2[], smoothness: number): Point2[] {
+  if(pnts.length < 2) {
+    return pnts;
+  }
   return pnts.reduce((smoothedPnts, pnt, i, arr) => {
     let prevX = 0;
     let prevY = 0;

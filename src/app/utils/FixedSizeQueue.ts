@@ -33,4 +33,11 @@ export class FixedSizeQueue<T> {
   getFillSize(): number {
     return this.queue.length;
   }
+
+  setSize(size: number): void {
+    this.size = size;
+    if (this.queue.length > size) {
+      this.queue = this.queue.slice(0, size);
+    }
+  }
 }
