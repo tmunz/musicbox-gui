@@ -15,8 +15,7 @@ permissions:
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+# Allow only one concurrent deployment, skipping queued runs but allowing in-progress runs to complete
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -29,19 +28,24 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: npm install, build, and test
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies, build, and test
         run: |
           npm install
           npm run build --if-present
           npm test
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
         with:
-          path: './dist'
+          name: github-pages-artifact
+          path: ./dist  # Adjust based on your build output
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
