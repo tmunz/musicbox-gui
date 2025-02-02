@@ -1,65 +1,62 @@
 import './App.css';
-import React, { startTransition, useEffect, useRef } from 'react';
+import React, { startTransition, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FixedSizeQueue } from './utils/FixedSizeQueue';
 import { SampleProvider } from './audio/SampleProvider';
 import { useDimension } from './utils/useDimension';
-import { Visualization } from './visualizations/Visualization';
 import visualizations from './visualizations';
 import { VisualizationSelector } from './visualizations/VisualizationSelector';
 import { Menubar } from './ui/Menubar';
 import { VisualizationSettingsComponent } from './settings/VisualizationSettingsComponent';
-import { SettingsAction, useSettings } from './settings/VisualizationSettingsContext';
+import { useAppState, VisualizationAction } from './AppContext';
 
 export function App() {
   const elementRef = useRef<HTMLDivElement>(null);
   const { width, height } = useDimension(elementRef) ?? { width: 0, height: 0 };
-  const { settings, dispatch } = useSettings();
-  const [selectedVisualization, setSelectedVisualization] = React.useState<Visualization>(visualizations[0]);
-  const [sampleProvider, setSampleProvider] = React.useState<FixedSizeQueue<Uint8Array>>(new FixedSizeQueue<Uint8Array>(1, new Uint8Array()));
-
+  const { appState, dispatch } = useAppState();
   const location = useLocation();
   const navigate = useNavigate();
 
+  const [sampleProvider, setSampleProvider] = useState<FixedSizeQueue<Uint8Array>>(new FixedSizeQueue<Uint8Array>(1, new Uint8Array()));
+
+
   useEffect(() => {
     const pathId = location.pathname.replace('/', '');
-    const vis = visualizations.find((v) => v.id === pathId);
-    if (vis) {
-      setSelectedVisualization(vis);
+    const visualization = visualizations.find((v) => v.id === pathId);
+    if (visualization) {
+      dispatch({ type: VisualizationAction.SET_VISUALIZATION, visualization });
     } else {
       navigate(`/`, { replace: false });
-      setSelectedVisualization(visualizations[0]);
+      dispatch({ type: VisualizationAction.SET_VISUALIZATION, visualization: visualizations[0] });
     }
   }, [location.pathname, navigate]);
 
-  useEffect(() => {
-    dispatch({ type: SettingsAction.SET_SETTINGS, newSettings: selectedVisualization.settings });
-  }, [selectedVisualization]);
-
   const selectVisualization = (id: string) => {
-    const vis = visualizations.find((v) => v.id === id);
-    if (!vis) {
+    const visualization = visualizations.find((v) => v.id === id);
+    if (!visualization) {
       console.error(`Visualization with id ${id} not found`);
       return;
     }
     startTransition(() => {
-      setSelectedVisualization(vis);
       navigate(`/${id}`);
+      dispatch({ type: VisualizationAction.SET_VISUALIZATION, visualization });
     });
   };
 
   return (
     <div className='musicbox' ref={elementRef} style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
-      <selectedVisualization.component
-        sampleProvider={sampleProvider}
-        canvas={{ width, height }}
-        {...Object.fromEntries(Object.entries(settings?.visualization || {}).map(([key, setting]) => [key, setting.value]))}
-      />
+      {appState.visualization &&
+        <appState.visualization.component
+          sampleProvider={sampleProvider}
+          canvas={{ width, height }}
+          {...Object.fromEntries(Object.entries(appState.visualization.settings?.visualization || {}).map(([key, setting]) => [key, setting.value]))}
+        />
+      }
       <Menubar hideTimeout={3000}>
-        <VisualizationSelector visualizations={visualizations} onSelect={selectVisualization} selectedId={selectedVisualization?.id} />
+        <VisualizationSelector visualizations={visualizations} onSelect={selectVisualization} selectedId={appState.visualization?.id} />
         <SampleProvider
           onSampleProviderChange={setSampleProvider}
-          {...Object.fromEntries(Object.entries(settings?.samples || {}).map(([key, setting]) => [key, setting.value]))}
+          {...Object.fromEntries(Object.entries(appState.visualization?.settings?.samples || {}).map(([key, setting]) => [key, setting.value]))}
         />
         <VisualizationSettingsComponent />
       </Menubar>

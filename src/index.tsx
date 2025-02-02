@@ -3,16 +3,16 @@ import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { SettingsProvider } from './app/settings/VisualizationSettingsContext';
+import { AppStateProvider } from './app/AppContext';
 
 const appElement = document.getElementById('app');
 if (appElement) {
   createRoot(appElement).render(
     <StrictMode>
       <Router>
-        <SettingsProvider>
+        <AppStateProvider>
           <App />
-        </SettingsProvider>
+        </AppStateProvider>
       </Router>
     </StrictMode>
   );
