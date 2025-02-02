@@ -53,7 +53,7 @@ export const Audio = ({ onChange }: AudioProviderProps) => {
   };
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <AudioControls onRecord={activateMicrophone} onPlay={activateUrlStream} onStop={stop} mediaStreamType={currentStream?.type ?? null} />
     </div>

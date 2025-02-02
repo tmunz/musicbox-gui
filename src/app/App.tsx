@@ -53,11 +53,11 @@ export function App() {
         />
       }
       <Menubar hideTimeout={3000}>
-        <VisualizationSelector visualizations={visualizations} onSelect={selectVisualization} selectedId={appState.visualization?.id} />
         <SampleProvider
           onSampleProviderChange={setSampleProvider}
           {...Object.fromEntries(Object.entries(appState.visualization?.settings?.samples || {}).map(([key, setting]) => [key, setting.value]))}
         />
+        <VisualizationSelector visualizations={visualizations} onSelect={selectVisualization} selectedId={appState.visualization?.id} />
         <SettingsComponent />
       </Menubar>
     </div>

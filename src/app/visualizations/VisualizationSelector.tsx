@@ -1,6 +1,9 @@
 import './VisualizationSelector.css';
-import React, { useState } from 'react';
+import React from 'react';
 import { Visualization } from './Visualization';
+import { IconButton } from '../ui/IconButton';
+import { PiCaretLeft, PiCaretRight } from 'react-icons/pi';
+import { VisualizationInfo } from './VisualizationInfo';
 
 interface VisualizationSelectorProps {
   visualizations: Visualization[];
@@ -10,7 +13,10 @@ interface VisualizationSelectorProps {
 
 export const VisualizationSelector = ({ visualizations, onSelect, selectedId }: VisualizationSelectorProps) => {
 
-  const visualization = visualizations.find((v) => v.id === selectedId);
+  const [showInfo, setShowInfo] = React.useState(false);
+  const visualizationIndex = visualizations.findIndex((v) => v.id === selectedId);
+  const visualization = visualizations[visualizationIndex];
+  const size = 36;
 
   if (!visualizations.length) {
     return <div>No visualizations available</div>;
@@ -22,27 +28,15 @@ export const VisualizationSelector = ({ visualizations, onSelect, selectedId }: 
 
   return (
     <div className='visualization-selector'>
-      <h1>{visualization.title}</h1>
-      <h2>
-        <label>Artist</label><span>{visualization.artist}</span>
-        <label>Design</label><span>{visualization.design}</span>
-      </h2>
-      <div className='visualization-selector-description'>
-        {visualization.description}
-      </div>
-      <div className='visualization-cover-art'>
-        <img
-          src={visualization.imgSrc}
-          alt={`Visualization: ${visualization.title}`}
-        />
-      </div>
-      <div>
-        {visualizations.map((v) => (
-          <button key={v.id} onClick={() => onSelect(v.id)}>
-            {v.title}
-          </button>
-        ))}
-      </div>
-    </div >
+      <IconButton onClick={() => onSelect(visualizations[(visualizationIndex - 1 + visualizations.length) % visualizations.length].id)} title='Previous visualization'>
+        <PiCaretLeft size={size} />
+      </IconButton>
+      <IconButton onClick={() => setShowInfo(b => !b)} title='Show info'>
+        {showInfo ? <VisualizationInfo visualization={visualization} /> : <img src={visualization.imgSrc} style={{ height: size }} />}
+      </IconButton>
+      <IconButton onClick={() => onSelect(visualizations[(visualizationIndex + 1) % visualizations.length].id)} title='Next visualization'>
+        <PiCaretRight size={size} />
+      </IconButton>
+    </div>
   );
 };
