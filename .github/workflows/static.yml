@@ -3,6 +3,7 @@ name: Deploy static content to Pages
 on:
   push:
     branches: ["master"]
+
   workflow_dispatch:
 
 permissions:
@@ -10,6 +11,8 @@ permissions:
   pages: write
   id-token: write
 
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -21,26 +24,19 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
-
       - name: Install dependencies, build, and test
         run: |
           npm install
           npm run build --if-present
           npm test
-
-      - name: Check if build directory exists
-        run: ls -l ./dist || echo "Directory not found!"
-
-      - name: Setup GitHub Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload Pages artifact
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
-
+          path: './dist'
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v3
+        uses: actions/deploy-pages@v4
