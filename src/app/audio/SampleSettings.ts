@@ -20,7 +20,7 @@ export const createSampleSettings = (frequencyBands = 32, sampleSize = 1, minFre
     type: SettingType.NUMBER,
     params: {
       min: 1,
-      max: 1024,
+      max: 100,
       step: 1
     },
     value: sampleSize

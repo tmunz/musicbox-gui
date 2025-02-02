@@ -22,7 +22,8 @@
 
   &>* {
     pointer-events: all;
-    padding: 1rem;
+    backdrop-filter: blur(10px);
+    background-color: rgba(0, 0, 0, 0.2);
 
     &:first-child {
       justify-self: start;

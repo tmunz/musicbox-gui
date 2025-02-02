@@ -1,0 +1,42 @@
+.number-setting {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  min-width: 200px;
+
+  label {
+    font-size: 0.8em;
+  }
+
+  input[type="range"] {
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #ddd;
+    border-radius: 4px;
+    outline: none;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #ccc;
+    }
+
+    &::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    &::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+  }
+}

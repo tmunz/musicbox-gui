@@ -7,7 +7,7 @@ import { useDimension } from './utils/useDimension';
 import visualizations from './visualizations';
 import { VisualizationSelector } from './visualizations/VisualizationSelector';
 import { Menubar } from './ui/Menubar';
-import { VisualizationSettingsComponent } from './settings/VisualizationSettingsComponent';
+import { SettingsComponent } from './settings/SettingsComponent';
 import { useAppState, VisualizationAction } from './AppContext';
 
 export function App() {
@@ -58,7 +58,7 @@ export function App() {
           onSampleProviderChange={setSampleProvider}
           {...Object.fromEntries(Object.entries(appState.visualization?.settings?.samples || {}).map(([key, setting]) => [key, setting.value]))}
         />
-        <VisualizationSettingsComponent />
+        <SettingsComponent />
       </Menubar>
     </div>
   );
