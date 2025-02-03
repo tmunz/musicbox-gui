@@ -10,5 +10,6 @@ export interface Visualization {
   imgSrc: string;
   description: ReactNode;
   component: (props: { sampleProvider: FixedSizeQueue<Uint8Array>, canvas: { width: number, height: number } }) => React.JSX.Element;
+  color: string;
   settings: Record<string, Settings>;
 }

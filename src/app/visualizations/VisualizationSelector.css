@@ -1,9 +1,0 @@
-.visualization-selector {
-  display: flex;
-  flex-direction: row;
-  align-items: end;
-
-  img {
-    aspect-ratio: 1/1;
-  }
-}

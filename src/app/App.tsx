@@ -5,10 +5,14 @@ import { FixedSizeQueue } from './utils/FixedSizeQueue';
 import { SampleProvider } from './audio/SampleProvider';
 import { useDimension } from './utils/useDimension';
 import visualizations from './visualizations';
-import { VisualizationSelector } from './visualizations/VisualizationSelector';
 import { Menubar } from './ui/Menubar';
 import { SettingsComponent } from './settings/SettingsComponent';
 import { useAppState, VisualizationAction } from './AppContext';
+import Carousel from './ui/Carousel';
+import { VisualizationComponent } from './visualizations/VisualizationComponent';
+import { MenubarItem } from './ui/MenubarItem';
+import { PiInfo, PiSlidersHorizontalDuotone } from 'react-icons/pi';
+import { VisualizationInfo } from './visualizations/VisualizationInfo';
 
 export function App() {
   const elementRef = useRef<HTMLDivElement>(null);
@@ -43,22 +47,37 @@ export function App() {
     });
   };
 
+  const items = visualizations.map((v) => {
+    const active = appState.visualization?.id === v.id;
+    return {
+      id: v.id, component: <VisualizationComponent
+        key={v.id}
+        visualization={active ? appState.visualization! : v}
+        sampleProvider={sampleProvider}
+        canvas={{ width, height }}
+        active={active}
+      />
+    };
+  });
+
   return (
     <div className='musicbox' ref={elementRef} style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
-      {appState.visualization &&
-        <appState.visualization.component
-          sampleProvider={sampleProvider}
-          canvas={{ width, height }}
-          {...Object.fromEntries(Object.entries(appState.visualization.settings?.visualization || {}).map(([key, setting]) => [key, setting.value]))}
-        />
-      }
+      <Carousel
+        items={items}
+        selectedId={appState.visualization?.id}
+        onSelect={selectVisualization}
+      />
       <Menubar hideTimeout={3000}>
+        <MenubarItem icon={PiInfo}>
+          <VisualizationInfo visualization={appState.visualization} />
+        </MenubarItem>
+        <MenubarItem icon={PiSlidersHorizontalDuotone}>
+          <SettingsComponent />
+        </MenubarItem>
         <SampleProvider
           onSampleProviderChange={setSampleProvider}
           {...Object.fromEntries(Object.entries(appState.visualization?.settings?.samples || {}).map(([key, setting]) => [key, setting.value]))}
         />
-        <VisualizationSelector visualizations={visualizations} onSelect={selectVisualization} selectedId={appState.visualization?.id} />
-        <SettingsComponent />
       </Menubar>
     </div>
   );

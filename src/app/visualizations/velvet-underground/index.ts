@@ -10,6 +10,7 @@ const unknownPleasures: Visualization = {
   imgSrc: require('./velvet-underground.png'),
   description: 'Andy Warhol designed the album cover for The Velvet Underground & Nico, the debut album by the American rock band the Velvet Underground, released in March 1967 by Verve Records. The cover features a yellow banana sticker that can be peeled off to reveal a pink banana underneath. The design was innovative and interactive, reflecting the band\'s avant-garde style and Warhol\'s pop art aesthetic.',
   component: VelvetUnderground,
+  color: '#fafafa',
   settings: {
     samples: createSampleSettings(),
   }

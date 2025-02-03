@@ -3,8 +3,8 @@
   flex-direction: column;
   gap: 1rem;
   text-align: justify;
+  width: 400px;
   padding: 1rem;
-  min-width: 300px;
 
   h1, h2 {
     margin: 0;
@@ -24,9 +24,15 @@
   }
 
   .visualization-cover-art {
-    width: 100%;
+    text-align: center;
+    &.visualization-cover-art-large {
+      img {
+        width: 100%;
+      }
+    }
     img {
-      width: 100%;
+      width: 36px;
+      transition: width 0.5s ease;
       aspect-ratio: 1/1;
     }
   }
