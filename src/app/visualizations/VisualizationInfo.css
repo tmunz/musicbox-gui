@@ -4,7 +4,9 @@
   gap: 1rem;
   text-align: justify;
   width: 400px;
+  max-width: 100%;
   padding: 1rem;
+  box-sizing: border-box;
 
   h1, h2 {
     margin: 0;

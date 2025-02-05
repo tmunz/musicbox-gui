@@ -3,7 +3,6 @@ import React, { useState, forwardRef, useImperativeHandle, ReactNode } from 'rea
 import { IconButton } from './IconButton';
 import { IconType } from 'react-icons';
 import { PiX } from 'react-icons/pi';
-import { useFade } from '../utils/useFade';
 
 export interface MenubarItemRef {
   isActive: () => boolean;
@@ -16,7 +15,6 @@ interface MenubarItemProps {
 
 export const MenubarItem = forwardRef<MenubarItemRef, MenubarItemProps>(({ children, icon: Icon }, ref) => {
   const [active, setActive] = useState(false);
-  // const { visible, fadeStyle } = useFade(active, 500, 200);
 
   useImperativeHandle(ref, () => ({
     isActive: () => active,
@@ -24,7 +22,7 @@ export const MenubarItem = forwardRef<MenubarItemRef, MenubarItemProps>(({ child
 
   return (
     <div className='menubar-item'>
-      {active && <div style={{}}>{children}</div>}
+      <div className={`menu-item-content ${active ? '' : 'menu-item-content-hidden'}`}>{children}</div>
       <IconButton
         className={active ? 'close-button' : ''}
         onClick={() => setActive(b => !b)}

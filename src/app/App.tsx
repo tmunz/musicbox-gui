@@ -8,7 +8,7 @@ import visualizations from './visualizations';
 import { Menubar } from './ui/Menubar';
 import { SettingsComponent } from './settings/SettingsComponent';
 import { useAppState, VisualizationAction } from './AppContext';
-import Carousel from './ui/Carousel';
+import { Carousel } from './ui/Carousel';
 import { VisualizationComponent } from './visualizations/VisualizationComponent';
 import { MenubarItem } from './ui/MenubarItem';
 import { PiInfo, PiSlidersHorizontalDuotone } from 'react-icons/pi';

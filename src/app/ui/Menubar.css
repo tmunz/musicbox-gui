@@ -23,6 +23,7 @@
     pointer-events: all;
     background-color: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(10px);
+    max-width: 100%;
 
     &:last-child {
       justify-self: end;

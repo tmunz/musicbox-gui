@@ -6,10 +6,20 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { AppStateProvider } from './app/AppContext';
 
 const appElement = document.getElementById('app');
+
 if (appElement) {
+
+  const getBaseName = () => {
+    const pathSegments = window.location.pathname.split('/');
+    if (pathSegments.length > 1) {
+      return `/${pathSegments[0]}`;
+    }
+    return '/';
+  };
+
   createRoot(appElement).render(
     <StrictMode>
-      <Router>
+      <Router basename={getBaseName()}>
         <AppStateProvider>
           <App />
         </AppStateProvider>

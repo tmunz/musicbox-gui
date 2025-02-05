@@ -2,6 +2,7 @@
   "name": "musicbox-gui",
   "version": "0.0.1",
   "repository": "https://github.com/tmunz/musicbox-gui",
+  "homepage": "https://tmunz.github.io/musicbox-gui",
   "description": "Musicbox",
   "main": "src/index.tsx",
   "scripts": {

@@ -23,11 +23,11 @@ export const UnknownPleasuresCanvas = ({ lines = [], width = 400, height = 600, 
 
   const svgContent = `
     <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-      <rect x="0" y="0" width="${width}" height="${height}" fill="${backgroundColor}" />
         ${(smoothness === 0 ? getSimplePaths() : getBezierPaths()).reverse().join('')}
-    </svg`;
+    </svg>`;
 
   return (
-    <div dangerouslySetInnerHTML={{ __html: svgContent }} />
+    <img style={{ width, height }} alt="generated SVG" src={`data:image/svg+xml;base64,${window.btoa(svgContent)}`} />
+    // <div dangerouslySetInnerHTML={{ __html: svgContent }} />
   );
 };

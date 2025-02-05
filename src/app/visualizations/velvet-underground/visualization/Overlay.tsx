@@ -1,4 +1,5 @@
 import React from 'react';
+import { PiCaretLeftFill } from 'react-icons/pi';
 
 export function Overlay() {
   return (
@@ -18,7 +19,7 @@ export function Overlay() {
       display: 'flex',
       alignItems: 'center'
     }}>
-      <span style={{ fontSize: '2.5em', lineHeight: '2.5em' }}>⏴</span>
+      <PiCaretLeftFill size={14}/>
       <span>Click slowly and see</span>
     </div>
   )

@@ -1,7 +1,8 @@
 import './Carousel.css';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { PiCaretLeft, PiCaretRight } from 'react-icons/pi';
 import { IconButton } from './IconButton';
+import { useAutoHide } from '../utils/useAutoHide';
 
 interface CarouselProps {
   items: { id: string; component: React.ReactNode }[];
@@ -9,9 +10,13 @@ interface CarouselProps {
   selectedId?: string;
 }
 
-const Carousel = ({ items, onSelect, selectedId }: CarouselProps) => {
+export const Carousel = ({ items, onSelect, selectedId }: CarouselProps) => {
   const index = items.findIndex((item) => item.id === selectedId);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const visible = useAutoHide();
+
 
   const next = () => {
     const nextIndex = (index + 1) % items.length;
@@ -19,8 +24,8 @@ const Carousel = ({ items, onSelect, selectedId }: CarouselProps) => {
   };
 
   const prev = () => {
-    const nextIndex = (index - 1 + items.length) % items.length;
-    onSelect(items[nextIndex].id);
+    const prevIndex = (index - 1 + items.length) % items.length;
+    onSelect(items[prevIndex].id);
   };
 
   useEffect(() => {
@@ -35,20 +40,27 @@ const Carousel = ({ items, onSelect, selectedId }: CarouselProps) => {
 
   useEffect(() => {
     let startX = 0;
-    let endX = 0;
+    let lastX = 0;
 
     const handleTouchStart = (e: TouchEvent) => {
       startX = e.touches[0].clientX;
+      lastX = startX;
+      setIsDragging(true);
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      endX = e.touches[0].clientX;
+      const currentX = e.touches[0].clientX;
+      setDragOffset(currentX - startX);
+      lastX = currentX;
     };
 
     const handleTouchEnd = () => {
-      const deltaX = startX - endX;
-      if (deltaX > 50) next();
-      if (deltaX < -50) prev();
+      setIsDragging(false);
+      const deltaX = lastX - startX;
+
+      if (deltaX < -50) next();
+      else if (deltaX > 50) prev();
+      setDragOffset(0);
     };
 
     const carousel = carouselRef.current;
@@ -68,24 +80,29 @@ const Carousel = ({ items, onSelect, selectedId }: CarouselProps) => {
   }, [index]);
 
   return (
-    <div className="carousel" ref={carouselRef}>
-      <div className="carousel-track" style={{ transform: `translateX(-${index * 100}%)` }}>
+    <div className='carousel' ref={carouselRef}>
+      <div
+        className='carousel-track'
+        style={{
+          transform: `translateX(calc(${-index * 100}% + ${dragOffset}px))`,
+          transition: isDragging ? 'none' : 'transform 0.5s ease-in-out',
+        }}
+      >
         {items.map((item) => (
-          <div className="carousel-slide" key={item.id}>
+          <div className='carousel-slide' key={item.id}>
             {item.component}
           </div>
         ))}
       </div>
 
-      <IconButton className="carousel-btn prev" onClick={prev} title="Previous">
+      <IconButton className={`carousel-btn prev ${visible ? '' : 'carousel-btn-hidden'}`} onClick={prev} title='Previous'>
         <PiCaretLeft size={48} />
       </IconButton>
 
-      <IconButton className="carousel-btn next" onClick={next} title="Next">
+      <IconButton className={`carousel-btn next ${visible ? '' : 'carousel-btn-hidden'}`} onClick={next} title='Next'>
         <PiCaretRight size={48} />
       </IconButton>
     </div>
   );
 };
 
-export default Carousel;

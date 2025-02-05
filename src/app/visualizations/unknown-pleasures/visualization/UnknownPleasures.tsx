@@ -14,6 +14,12 @@ export const UnknownPleasures = ({ sampleProvider, canvas, noise = 0.2 }: Unknow
   const animationIdRef = useRef<number>(0);
   const [lines, setLines] = React.useState<Point2[][]>([]);
 
+  const borderThreshold = 10;
+  const w_ = canvas?.width ?? 400;
+  const h_ = canvas?.height ?? 600;
+  const width = Math.min(w_, h_ * 3 / 4) * 0.5;
+  const height = Math.min(w_ * 4 / 3, h_) * 0.5;
+
   function gaussianDeviation(x: number, mu = 0.5, sigma = 0.08) {
     const denominator = sigma * Math.sqrt(2 * Math.PI);
     const exponent = Math.exp(-0.5 * Math.pow((x - mu) / sigma, 2));
@@ -22,12 +28,9 @@ export const UnknownPleasures = ({ sampleProvider, canvas, noise = 0.2 }: Unknow
 
   useEffect(() => {
     const convertSamplesToPoints = () => {
-      const width = canvas?.width ?? 400;
-      const height = canvas?.height ?? 600;
-      const d = Math.min(width, height);
-      const border = d * 0.2;
-      const h = d - 2 * border;
-      const w = h * 3 / 4;
+      const border = height * 0.1;
+      const h = height - border;
+      const w = width - borderThreshold;
       const l = (width - w) / 2;
       const frequencyBands = sampleProvider.get(0)?.length;
       const numberOfSamples = sampleProvider.getFullSize();
@@ -39,7 +42,7 @@ export const UnknownPleasures = ({ sampleProvider, canvas, noise = 0.2 }: Unknow
 
       for (let i = 0; i < frequencyBands; i++) {
 
-        const frequencyBaseY = h + border - verticalDistance * i;
+        const frequencyBaseY = h + border - verticalDistance * i - borderThreshold;
         const values: number[] = [];
 
         for (let t = displaySamples - 1; t >= 0; t--) {
@@ -66,9 +69,11 @@ export const UnknownPleasures = ({ sampleProvider, canvas, noise = 0.2 }: Unknow
     return () => {
       cancelAnimationFrame(animationIdRef.current);
     };
-  }, [sampleProvider, canvas?.width, canvas?.height, noise]);
+  }, [sampleProvider, width, height, noise]);
 
   return (
-    <UnknownPleasuresCanvas {...canvas} lines={lines} />
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}>
+      <UnknownPleasuresCanvas {...canvas} width={width} height={height} lines={lines} />
+    </div>
   );
 };

@@ -49,7 +49,7 @@ export const Menubar = ({ hideTimeout, children }: MenubarProps) => {
     <div className={`menubar ${visible ? 'visible' : 'hidden'}`}>
       {React.Children.map(children, (child, index) =>
         React.isValidElement(child)
-          ? React.cloneElement(child, { ref: (el: any) => (childRefs.current[index] = el) })
+          ? React.cloneElement(child, { ref: (el: any) => (childRefs.current[index] = el) } as any)
           : child
       )}
     </div>
