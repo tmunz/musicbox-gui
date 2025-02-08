@@ -5,11 +5,11 @@ import { GroupProps, useFrame } from '@react-three/fiber';
 import { AdditiveBlending, Group, Object3DEventMap, Vector3 } from 'three';
 
 interface FlareProps extends GroupProps {
-  streak?: Vector3 | [number, number, number];
+  streak: Vector3 | [number, number, number];
   visible?: boolean;
 }
 
-export const Flare = forwardRef(({ streak = new Vector3(8, 20, 1), visible, ...props }: FlareProps, flareRef: Ref<Group<Object3DEventMap>> | undefined) => {
+export const Flare = forwardRef(({ streak, visible, ...props }: FlareProps, flareRef: Ref<Group<Object3DEventMap>> | undefined) => {
   const groupRef = useRef<Group>(null);
   const [streakTexture, dotTexture, glowTexture] = useTexture([
     require('../assets/lensflare/lensflare2.png'),
@@ -41,7 +41,7 @@ export const Flare = forwardRef(({ streak = new Vector3(8, 20, 1), visible, ...p
         <planeGeometry />
         <meshBasicMaterial map={glowTexture} transparent opacity={1} blending={AdditiveBlending} depthWrite={false} toneMapped={false} />
       </mesh>
-      <mesh rotation={[0, 0, Math.PI / 2]} scale={streak}>
+      <mesh scale={streak}>
         <planeGeometry />
         <meshBasicMaterial map={streakTexture} transparent opacity={0.1} blending={AdditiveBlending} depthWrite={false} toneMapped={false} />
       </mesh>

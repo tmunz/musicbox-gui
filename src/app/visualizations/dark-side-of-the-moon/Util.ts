@@ -14,6 +14,3 @@ export function lerpV3(value: THREE.Vector3, goal: [number, number, number], spe
   value.lerp(vector.set(...goal), speed);
 }
 
-export function calculateRefractionAngle(incidentAngle: number, glassIor = 10, airIor = 1.000293) {
-  return Math.asin((airIor * Math.sin(incidentAngle)) / glassIor) || 0;
-}

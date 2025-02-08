@@ -8,9 +8,10 @@ interface CarouselProps {
   items: { id: string; component: React.ReactNode }[];
   onSelect: (id: string) => void;
   selectedId?: string;
+  defaultFocus?: boolean
 }
 
-export const Carousel = ({ items, onSelect, selectedId }: CarouselProps) => {
+export const Carousel = ({ items, onSelect, selectedId, defaultFocus = false }: CarouselProps) => {
   const index = items.findIndex((item) => item.id === selectedId);
   const carouselRef = useRef<HTMLDivElement>(null);
   const [dragOffset, setDragOffset] = useState(0);
@@ -30,12 +31,17 @@ export const Carousel = ({ items, onSelect, selectedId }: CarouselProps) => {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'ArrowRight') next();
-      if (event.key === 'ArrowLeft') prev();
+      if (document.activeElement === carouselRef.current) {
+        if (event.key === 'ArrowRight') next();
+        if (event.key === 'ArrowLeft') prev();
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [index]);
 
   useEffect(() => {
@@ -80,7 +86,7 @@ export const Carousel = ({ items, onSelect, selectedId }: CarouselProps) => {
   }, [index]);
 
   return (
-    <div className='carousel' ref={carouselRef}>
+    <div className='carousel' ref={carouselRef} tabIndex={defaultFocus ? 0 : undefined}>
       <div
         className='carousel-track'
         style={{

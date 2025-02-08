@@ -1,8 +1,8 @@
-import React, { forwardRef, useRef } from 'react';
-import { extend, useFrame, useThree } from '@react-three/fiber';
+import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import { extend, useFrame } from '@react-three/fiber';
 import { shaderMaterial } from '@react-three/drei';
 import { Object3DNode } from '@react-three/fiber/dist/declarations/src/three-types';
-import { Mesh, ShaderMaterial } from 'three';
+import { Mesh, ShaderMaterial, Vector3 } from 'three';
 
 // Based on
 // "Improving the Rainbow" by Alan Zucconi: https://www.alanzucconi.com/2017/07/15/improving-the-rainbow-2/
@@ -15,7 +15,7 @@ extend({
       speed: 1,
       fade: 0.5,
       startRadius: 1,
-      endRadius: 0,
+      endRadius: 1,
       emissiveIntensity: 2.5,
       ratio: 1
     },
@@ -70,13 +70,7 @@ extend({
       }
 
       void main() {
-        const vec2 vstart = vec2(0.5, 0.5);
-        const vec2 vend = vec2(1.0, 0.5);
-        vec2 dir = vstart - vend;
-        float len = length(dir);
-        float cosR = dir.y / len;
-        float sinR = dir.x / len;
-        vec2 uv = (mat2(cosR, -sinR, sinR, cosR) * (vUv * vec2(ratio, 1.) - vec2(0., 1.) - vstart * vec2(1., -1.)) / len);
+        vec2 uv = vec2(vUv.y, vUv.x) - vec2(0.5, 0.0);
         float a = atan(uv.x, uv.y) * 10.0;
         float s = uv.y * (endRadius - startRadius) + startRadius;
         float w = (uv.x / s + .5) * 300. + 400. + a;
@@ -90,7 +84,6 @@ extend({
     `
   )
 });
-
 
 interface RainbowMaterial {
   time: number;
@@ -116,11 +109,32 @@ declare global {
   }
 }
 
-export const Rainbow = forwardRef<Mesh, RainbowProps>(
-  ({ startRadius = 0, endRadius = 0.5, emissiveIntensity = 2.5, fade = 0.25, ...props }, ref) => {
+export interface RainbowApi {
+  adjustBeam: (start: Vector3, end: Vector3, orientation: number) => void;
+  setInactive: () => void;
+}
+
+export const Rainbow = forwardRef<RainbowApi, RainbowProps>(
+  ({ startRadius = 0, endRadius = 1, emissiveIntensity = 2.5, fade = 0, ...props }, fref) => {
+    const ref = useRef<Mesh>(null);
     const materialRef = useRef<RainbowMaterial | null>(null);
-    const { width, height } = useThree((state) => state.viewport);
-    const length = Math.hypot(width, height); // Add 1.5 due to the motion of the rainbow
+
+    useImperativeHandle(fref, () => ({
+      adjustBeam: (start: Vector3, end: Vector3, orientation: number = 1) => {
+        const direction = new Vector3().subVectors(end, start).normalize();
+        const adjustedStart = direction.clone().negate().multiplyScalar(startRadius * 2).add(start);
+        adjustedStart.addScaledVector(direction, startRadius);
+        const distance = adjustedStart.distanceTo(end);
+        const midPoint = new Vector3().lerpVectors(adjustedStart, end, 0.5);
+        const angle = Math.atan2(direction.y, direction.x);
+        ref.current?.position.copy(midPoint);
+        ref.current?.rotation.set(0, 0, angle);
+        ref.current?.scale.set(distance, orientation, 1);
+      },
+      setInactive: () => {
+        ref.current?.scale.set(0, 0, 0);
+      }
+    }), []);
 
     useFrame((state, delta) => {
       if (materialRef.current) {
@@ -129,13 +143,14 @@ export const Rainbow = forwardRef<Mesh, RainbowProps>(
     });
 
     return (
-      <mesh ref={ref} scale={[length, length, 1]} {...props}>
+      <mesh ref={ref} {...props}>
         <planeGeometry />
         <rainbowMaterial
           ref={materialRef}
           fade={fade}
           startRadius={startRadius}
           endRadius={endRadius}
+          emissiveIntensity={emissiveIntensity}
           ratio={1}
           toneMapped={false}
         />

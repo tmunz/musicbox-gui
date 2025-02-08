@@ -66,6 +66,7 @@ export function App() {
         items={items}
         selectedId={appState.visualization?.id}
         onSelect={selectVisualization}
+        defaultFocus
       />
       <Menubar hideTimeout={3000}>
         <MenubarItem icon={PiInfo}>
