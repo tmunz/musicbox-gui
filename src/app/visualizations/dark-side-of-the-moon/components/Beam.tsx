@@ -1,8 +1,7 @@
 import React, { useRef, useImperativeHandle, forwardRef, createRef } from 'react';
-import { Mesh, Vector3, Raycaster, Intersection, Object3D } from 'three';
-import { BeamSection, BeamSectionApi } from './BeamSection';
+import { Vector3, Raycaster, Intersection, Object3D } from 'three';
+import { BeamSection, BeamSectionApi, BeamSectionProps } from './BeamSection';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Rainbow, RainbowApi } from './Rainbow';
 
 export interface BeamApi {
   setBeam: (start: Vector3, direction: Vector3) => void;
@@ -12,12 +11,15 @@ interface BeamProps {
   maxBounces?: number;
   enableRainbow?: boolean;
   children?: React.ReactNode;
+  deflection?: (inDirection: Vector3, faceNormal: Vector3) => Vector3;
 }
 
-export const Beam = forwardRef<BeamApi, BeamProps>(({ maxBounces = 10, enableRainbow = false, children }, ref) => {
+const MIRROR_FUNCTION = (inDirection: Vector3, faceNormal: Vector3) => new Vector3().subVectors(inDirection, faceNormal.multiplyScalar(2 * inDirection.dot(faceNormal))).normalize();
+
+export const Beam = forwardRef<BeamApi, BeamProps>(({ maxBounces = 10, deflection = MIRROR_FUNCTION, children }, ref) => {
 
   const beamStartRef = useRef<{ start: Vector3, direction: Vector3 }>({ start: new Vector3(), direction: new Vector3(1, 0, 0) });
-  const beamSectionsRef = useRef<(BeamSectionApi | RainbowApi | null)[]>([]);
+  const beamSectionsRef = useRef<(BeamSectionApi | null)[]>([]);
   const hitObjectsRefs = useRef<(React.RefObject<Object3D> | null)[]>([]);
   const { width, height } = useThree((state) => state.viewport);
   const far = Math.hypot(width / 2, height / 2);
@@ -58,8 +60,7 @@ export const Beam = forwardRef<BeamApi, BeamProps>(({ maxBounces = 10, enableRai
       const inDirection = new Vector3().subVectors(prev.end, prev.start).normalize();
       const startNormal = prev.endNormal;
       if (!startNormal) break;
-      const outDirection = calculateOutDirection(inDirection, startNormal, -Math.PI / 5);
-      const curr = calculateBeamSection(prev.end, outDirection, startNormal);
+      const curr = calculateBeamSection(prev.end, deflection(inDirection, startNormal), startNormal);
       sections.push(curr);
       remainingRays--;
     }
@@ -96,41 +97,22 @@ export const Beam = forwardRef<BeamApi, BeamProps>(({ maxBounces = 10, enableRai
       {React.Children.map(children, (child, index) =>
         React.cloneElement(child as React.ReactElement, { ref: hitObjectsRefs.current[index] })
       )}
-      <BeamSection ref={e => beamSectionsRef.current[0] = e} intensity={2} enableGlow enableFlare startFade={5} />
-      {Array.from({ length: maxBounces }).map((_, i_) => {
-        const i = i_ + 1;
-        const last = i === maxBounces;
-        if (enableRainbow) {
-          return <Rainbow
-            key={i}
-            ref={e => beamSectionsRef.current[i] = e}
-            intensity={1.6}
-            startRadius={0.3}
-            endRadius={1}
-            startFade={1}
-            endFade={1}
-            colorRatio={last ? 1 : 0.5}
-          />;
+      {Array.from({ length: maxBounces + 1 }).map((_, i) => {
+        let beamSectionProps: BeamSectionProps = {};
+        if (i === 0) {
+          beamSectionProps = { enableGlow: true, enableFlare: true, startFade: 5 };
+        } else if (i === maxBounces) {
+          beamSectionProps = { intensity: 1.6, startRadius: 0.3, endRadius: 1, startFade: 1, endFade: 1, colorRatio: 1 };
         } else {
-          return <BeamSection
-            key={i}
-            ref={e => beamSectionsRef.current[i] = e}
-            intensity={2}
-          />;
+          beamSectionProps = { startRadius: 0.3, endRadius: 0.8, startFade: 1, endFade: 1, colorRatio: 0.5 };
         }
+        return <BeamSection
+          key={i}
+          ref={e => beamSectionsRef.current[i] = e}
+          intensity={2}
+          {...beamSectionProps}
+        />;
       })}
     </>
   );
 });
-
-const calculateOutDirection = (inDirection: Vector3, faceNormal: Vector3, angleInRadians?: number) => {
-  const dotProduct = inDirection.dot(faceNormal);
-  if (angleInRadians === undefined) {
-    return new Vector3().subVectors(inDirection, faceNormal.multiplyScalar(2 * dotProduct)).normalize();
-  } else {
-    const deflectionDirection = inDirection.clone();
-    const deflectionAmount = Math.sin(angleInRadians);
-    deflectionDirection.add(faceNormal.clone().multiplyScalar(deflectionAmount));
-    return deflectionDirection.normalize();
-  }
-}

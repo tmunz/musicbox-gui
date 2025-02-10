@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { Canvas, useLoader, useFrame, Size } from '@react-three/fiber';
 import { Bloom, EffectComposer, LUT } from '@react-three/postprocessing';
 import { AmbientLight, SpotLight, Texture, Vector2, Vector3 } from 'three';
@@ -58,6 +58,13 @@ function Scene({ sampleProvider }: { sampleProvider?: FixedSizeQueue<Uint8Array>
     beamRef.current?.setBeam(start, direction);
   });
 
+  const deflection = useCallback((inDirection: Vector3, faceNormal: Vector3) => {
+    const deflectionDirection = inDirection.clone();
+    const deflectionAmount = Math.sin(-Math.PI / 5);
+    deflectionDirection.add(faceNormal.clone().multiplyScalar(deflectionAmount));
+    return deflectionDirection.normalize();
+  }, []);
+
   return (
     <>
       <ambientLight ref={ambientRef} intensity={0} />
@@ -65,10 +72,9 @@ function Scene({ sampleProvider }: { sampleProvider?: FixedSizeQueue<Uint8Array>
       <pointLight position={[0, 10, 0]} intensity={0.05} />
       <pointLight position={[-10, 0, 0]} intensity={0.05} />
       <spotLight ref={spotRef} intensity={1} distance={7} angle={1} penumbra={1} position={[0, 0, 1]} />
-      <Beam ref={beamRef} maxBounces={2} enableRainbow>
+      <Beam ref={beamRef} maxBounces={2} deflection={deflection} >
         <Prism position={[0, -0.5, 0]} />
-      </Beam>
-
+      </Beam >
     </>
   );
 }
