@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { FixedSizeQueue } from '../../../utils/FixedSizeQueue';
 import { UnknownPleasuresCanvas, UnknownPleasuresCanvasProps } from './UnknownPleasuresCanvas';
 import { Point2 } from '../../../utils/Point';
+import { SampleProvider } from '../../../audio/SampleProvider';
 
 export interface UnknownPleasuresProps {
-  sampleProvider: FixedSizeQueue<Uint8Array>;
-  canvas?: UnknownPleasuresCanvasProps;
+  sampleProvider: SampleProvider;
+  canvas: UnknownPleasuresCanvasProps;
   noise?: number;
 }
 
@@ -15,8 +15,8 @@ export const UnknownPleasures = ({ sampleProvider, canvas, noise = 0.2 }: Unknow
   const [lines, setLines] = React.useState<Point2[][]>([]);
 
   const borderThreshold = 10;
-  const w_ = canvas?.width ?? 400;
-  const h_ = canvas?.height ?? 600;
+  const w_ = canvas.width ?? 400;
+  const h_ = canvas.height ?? 600;
   const width = Math.min(w_, h_ * 3 / 4) * 0.5;
   const height = Math.min(w_ * 4 / 3, h_) * 0.5;
 

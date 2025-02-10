@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { FixedSizeQueue } from '../utils/FixedSizeQueue';
+import { SampleProvider } from './SampleProvider';
 
 export const useAudioAnalysis = (streamProvider: Promise<MediaStream | null>, frequencyBands = 32, sampleSize = 1,
   minFrequency = 0, maxFrequency = 22050, melodicScale = false, sampleRate = 44100, fftSize = 2048) => {
 
   const audioDataRef = useRef<Uint8Array | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const [audioFrames, setAudioFrames] = useState(new FixedSizeQueue<Uint8Array>(sampleSize, new Uint8Array(frequencyBands).fill(0)));
+  const [audioFrames, setAudioFrames] = useState(new SampleProvider(sampleSize, new Uint8Array(frequencyBands).fill(0)));
 
   useEffect(() => {
     let audioContext: AudioContext | null = null;
@@ -59,7 +59,7 @@ export const useAudioAnalysis = (streamProvider: Promise<MediaStream | null>, fr
   };
 
   useEffect(() => {
-    setAudioFrames(new FixedSizeQueue<Uint8Array>(sampleSize, new Uint8Array(frequencyBands).fill(0)));
+    setAudioFrames(new SampleProvider(sampleSize, new Uint8Array(frequencyBands).fill(0)));
   }, [sampleSize, frequencyBands, minFrequency, maxFrequency]);
 
   useEffect(() => {

@@ -1,8 +1,7 @@
 import './App.css';
 import React, { startTransition, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FixedSizeQueue } from './utils/FixedSizeQueue';
-import { SampleProvider } from './audio/SampleProvider';
+import { SampleProviderComponent } from './audio/SampleProviderComponent';
 import { useDimension } from './utils/useDimension';
 import visualizations from './visualizations';
 import { Menubar } from './ui/Menubar';
@@ -13,6 +12,7 @@ import { VisualizationComponent } from './visualizations/VisualizationComponent'
 import { MenubarItem } from './ui/MenubarItem';
 import { PiInfo, PiSlidersHorizontalDuotone } from 'react-icons/pi';
 import { VisualizationInfo } from './visualizations/VisualizationInfo';
+import { SampleProvider } from './audio/SampleProvider';
 
 export function App() {
   const elementRef = useRef<HTMLDivElement>(null);
@@ -21,7 +21,7 @@ export function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [sampleProvider, setSampleProvider] = useState<FixedSizeQueue<Uint8Array>>(new FixedSizeQueue<Uint8Array>(1, new Uint8Array()));
+  const [sampleProvider, setSampleProvider] = useState<SampleProvider>(new SampleProvider(1, new Uint8Array()));
 
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export function App() {
         <MenubarItem icon={PiSlidersHorizontalDuotone}>
           <SettingsComponent />
         </MenubarItem>
-        <SampleProvider
+        <SampleProviderComponent
           onSampleProviderChange={setSampleProvider}
           {...Object.fromEntries(Object.entries(appState.visualization?.settings?.samples || {}).map(([key, setting]) => [key, setting.value]))}
         />

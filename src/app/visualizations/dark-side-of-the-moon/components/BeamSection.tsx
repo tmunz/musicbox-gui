@@ -3,13 +3,14 @@ import React, { useImperativeHandle, forwardRef, useRef } from 'react';
 import { useTexture } from '@react-three/drei';
 import { AdditiveBlending, DynamicDrawUsage, Group, InstancedMesh, Mesh, Object3DEventMap, Vector3 } from 'three';
 import { Flare } from './Flare';
+import { MeshProps } from '@react-three/fiber';
 
 export interface BeamSectionApi {
   adjustBeam: (start: Vector3, end: Vector3, width?: number, orientation?: number) => void;
   setInactive: () => void;
 }
 
-export interface BeamSectionProps {
+export interface BeamSectionProps extends MeshProps {
   startRadius?: number;
   endRadius?: number;
   startFade?: number;
@@ -68,6 +69,9 @@ export const BeamSection = forwardRef<BeamSectionApi, BeamSectionProps>(({ start
           colorRatio={colorRatio}
           intensity={intensity}
           toneMapped={false}
+          transparent
+          blending={AdditiveBlending}
+          depthWrite={false}
         />
       </mesh>
       {enableGlow && <instancedMesh ref={glowRef} args={[undefined, undefined, 100]} instanceMatrix-usage={DynamicDrawUsage}>

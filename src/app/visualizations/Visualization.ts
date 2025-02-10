@@ -1,6 +1,6 @@
-import { ReactNode } from "react";
-import { FixedSizeQueue } from "../utils/FixedSizeQueue";
-import { Settings } from "../settings/Setting";
+import { ReactNode } from 'react';
+import { Settings } from '../settings/Setting';
+import { SampleProvider } from '../audio/SampleProvider';
 
 export interface Visualization {
   id: string;
@@ -9,7 +9,7 @@ export interface Visualization {
   design: string;
   imgSrc: string;
   description: ReactNode;
-  component: (props: { sampleProvider: FixedSizeQueue<Uint8Array>, canvas: { width: number, height: number } }) => React.JSX.Element;
+  component: (props: { sampleProvider: SampleProvider, canvas: { width: number, height: number } }) => React.JSX.Element;
   color: string;
   settings: Record<string, Settings>;
 }

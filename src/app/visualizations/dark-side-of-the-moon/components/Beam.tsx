@@ -100,16 +100,15 @@ export const Beam = forwardRef<BeamApi, BeamProps>(({ maxBounces = 10, deflectio
       {Array.from({ length: maxBounces + 1 }).map((_, i) => {
         let beamSectionProps: BeamSectionProps = {};
         if (i === 0) {
-          beamSectionProps = { enableGlow: true, enableFlare: true, startFade: 5 };
+          beamSectionProps = { intensity: 3, enableGlow: true, enableFlare: true, startFade: 5 };
         } else if (i === maxBounces) {
-          beamSectionProps = { intensity: 1.6, startRadius: 0.3, endRadius: 1, startFade: 1, endFade: 1, colorRatio: 1 };
+          beamSectionProps = { intensity: 1.8, startRadius: 0.3, endRadius: 1, startFade: 1, endFade: 1, colorRatio: 1 };
         } else {
-          beamSectionProps = { startRadius: 0.3, endRadius: 0.8, startFade: 1, endFade: 1, colorRatio: 0.5 };
+          beamSectionProps = { intensity: 2.2, startRadius: 0.2, endRadius: 1, startFade: 1, endFade: 1, colorRatio: 0.6 };
         }
         return <BeamSection
           key={i}
-          ref={e => beamSectionsRef.current[i] = e}
-          intensity={2}
+          ref={((e: BeamSectionApi) => beamSectionsRef.current[i] = e) as any}
           {...beamSectionProps}
         />;
       })}

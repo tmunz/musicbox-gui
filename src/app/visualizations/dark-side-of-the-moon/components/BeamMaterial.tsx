@@ -67,17 +67,16 @@ extend({
 
       void main() {
         vec2 uv = vec2(vUv.y, vUv.x) - vec2(0.0, 0.5);
-        float spot = uv.x * (endRadius - startRadius) + startRadius;
-        vec3 spectralColor = spectral_zucconi6((uv.y / spot + .5) * 300. + 400., 0.0); // [400, 700]
-        vec3 whiteColor = vec3(1. - abs(uv.y) / spot * 2.);
+        float spotX = uv.x * (endRadius - startRadius) + startRadius;
+        float spotFactor = 1. - abs(uv.y) / spotX * 2.;
+        vec3 spectralColor = spectral_zucconi6((uv.y / spotX + .5) * 300. + 400., 0.0); // [400, 700]
+        vec3 whiteColor = vec3(spotFactor);
         vec3 color = mix(whiteColor, spectralColor, colorRatio);
         float startFadeFactor = smoothstep(0.0, startFade, vPositionY);
         float endFadeFactor = 1.0 - smoothstep(vLength - endFade, vLength, vPositionY);
-        float linearGradient = startFadeFactor * endFadeFactor;
-        float brightness = smoothstep(0., 0.5, color.r + color.g + color.b); 
-        float glow = linearGradient * intensity * brightness;    
-        gl_FragColor = vec4(color * glow, glow);
-        if (gl_FragColor.a < 0.1) discard;
+        float brightness = smoothstep(0., 0.5, color.r + color.g + color.b);  
+        gl_FragColor = vec4(color * intensity * brightness, spotFactor * startFadeFactor * endFadeFactor);
+        if (gl_FragColor.a < 0.0001) discard;
       }
     `
   )

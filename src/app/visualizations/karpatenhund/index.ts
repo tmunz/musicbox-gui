@@ -3,7 +3,7 @@ import { Visualization } from "../Visualization";
 import { Karpatenhund } from "./visualization/Karpatenhund";
 
 const unknownPleasures: Visualization = {
-  id: 'karpatenhund3',
+  id: 'karpatenhund-3',
   title: '#3',
   artist: 'Karpatenhund',
   design: 'Stefanie Schrank (Karpatenhund)',

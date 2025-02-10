@@ -5,10 +5,10 @@ import { AmbientLight, SpotLight, Texture, Vector2, Vector3 } from 'three';
 import { LUTCubeLoader } from 'postprocessing';
 import { Beam, BeamApi } from './components/Beam';
 import { Prism } from './components/Prism';
-import { FixedSizeQueue } from '../../utils/FixedSizeQueue';
+import { SampleProvider } from '../../audio/SampleProvider';
 
 export interface DarkSideOfTheMoonProps {
-  sampleProvider: FixedSizeQueue<Uint8Array>;
+  sampleProvider: SampleProvider;
   canvas: { width: number, height: number }
 }
 
@@ -19,14 +19,14 @@ export function DarkSideOfTheMoon({ sampleProvider, canvas }: DarkSideOfTheMoonP
       <color attach='background' args={['black']} />
       <Scene />
       <EffectComposer>
-        <Bloom mipmapBlur levels={9} intensity={1.5} luminanceThreshold={1} luminanceSmoothing={1} />
+        <Bloom mipmapBlur intensity={0.5} luminanceThreshold={1} luminanceSmoothing={0} />
         <LUT lut={texture} />
       </EffectComposer>
     </Canvas>
   );
 }
 
-function Scene({ sampleProvider }: { sampleProvider?: FixedSizeQueue<Uint8Array> }) {
+function Scene({ sampleProvider }: { sampleProvider?: SampleProvider }) {
   const [initialState, setInitialState] = useState(true);
   const ambientRef = useRef<AmbientLight | null>(null);
   const spotRef = useRef<SpotLight | null>(null);
