@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef } from 'react';
-import { extend, useFrame } from '@react-three/fiber';
+import { extend } from '@react-three/fiber';
 import { shaderMaterial } from '@react-three/drei';
 import { Object3DNode } from '@react-three/fiber/dist/declarations/src/three-types';
 import { Mesh, ShaderMaterial, Vector3 } from 'three';
@@ -11,38 +11,34 @@ import { Mesh, ShaderMaterial, Vector3 } from 'three';
 extend({
   RainbowMaterial: shaderMaterial(
     {
-      time: 0,
-      speed: 1,
-      fade: 0.5,
-      startRadius: 1,
+      startFade: 0,
+      endFade: 0,
+      startRadius: 0,
       endRadius: 1,
-      emissiveIntensity: 2.5,
-      ratio: 1
+      intensity: 1,
     },
     ` 
       varying vec2 vUv;
+      varying float vPositionY;
+      varying float vLength;
+
       void main() {
         vUv = uv;
-        vec4 modelPosition = modelMatrix * vec4(position, 1.0);
-        gl_Position = projectionMatrix * viewMatrix * modelPosition;
+        vLength = length(vec3(modelMatrix[1][0], modelMatrix[1][1], modelMatrix[1][2]));
+        vPositionY = (position.y + 0.5) * vLength;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
     `,
 
     ` 
       varying vec2 vUv;
-      uniform float fade;
-      uniform float speed;
+      varying float vPositionY;
+      varying float vLength;
+      uniform float startFade;
+      uniform float endFade;
       uniform float startRadius;
       uniform float endRadius;
-      uniform float emissiveIntensity;
-      uniform float time;
-      uniform float ratio;
-    
-      vec2 mp;
-      // ratio: 1/3 = neon, 1/4 = refracted, 1/5+ = approximate white
-      vec3 physhue2rgb(float hue, float ratio) {
-        return smoothstep(vec3(0.0),vec3(1.0), abs(mod(hue + vec3(0.0,1.0,2.0)*ratio,1.0)*2.0-1.0));
-      }
+      uniform float intensity;
 
       float _saturate (float x) {
         return min(1.0, max(0.0,x));
@@ -70,88 +66,90 @@ extend({
       }
 
       void main() {
-        vec2 uv = vec2(vUv.y, vUv.x) - vec2(0.5, 0.0);
-        float a = atan(uv.x, uv.y) * 10.0;
-        float s = uv.y * (endRadius - startRadius) + startRadius;
-        float w = (uv.x / s + .5) * 300. + 400. + a;
-        vec3 c = spectral_zucconi6(w, time); // [400, 700]
-        float l = 1. - smoothstep(fade, 1., uv.y);
-        float area = uv.y < 0. ? 0. : 1.;
-        float brightness = smoothstep(0., 0.5, c.x + c.y + c.z);     
-        gl_FragColor = vec4(area * c * l * brightness * emissiveIntensity, 1.0);
-        if (gl_FragColor.r + gl_FragColor.g + gl_FragColor.b < 0.01) discard;
+        vec2 uv = vec2(vUv.y, vUv.x) - vec2(0.0, 0.5);
+        float a = atan(uv.y, uv.x) * 10.0;
+        float s = uv.x * (endRadius - startRadius) + startRadius;
+        float w = (uv.y / s + .5) * 300. + 400. + a;
+        vec3 color = spectral_zucconi6(w, 0.0); // [400, 700]
+        float startFadeFactor = smoothstep(0.0, startFade, vPositionY);
+        float endFadeFactor = 1.0 - smoothstep(vLength - endFade, vLength, vPositionY);
+        float linearGradient = startFadeFactor * endFadeFactor;
+        float brightness = smoothstep(0., 0.5, color.r + color.g + color.b); 
+        float glow = linearGradient * intensity * brightness;    
+        gl_FragColor = vec4(color * glow, glow);
+        if (gl_FragColor.a < 0.1) discard;
       }
     `
   )
 });
 
 interface RainbowMaterial {
-  time: number;
-  speed: number;
-  fade: number;
+  startFade: number;
+  endFade: number;
   startRadius: number;
   endRadius: number;
   ratio: number;
+  intensity: number;
 }
 
 interface RainbowProps {
   startRadius?: number;
   endRadius?: number;
-  emissiveIntensity?: number;
-  fade?: number;
+  intensity?: number;
+  startFade?: number;
+  endFade?: number;
 }
 
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      rainbowMaterial: Object3DNode<ShaderMaterial, typeof ShaderMaterial> & RainbowMaterial;
+      rainbowMaterial: Object3DNode<ShaderMaterial, typeof ShaderMaterial> & Partial<RainbowMaterial>;
     }
   }
 }
 
 export interface RainbowApi {
-  adjustBeam: (start: Vector3, end: Vector3, orientation: number) => void;
+  adjustBeam: (start: Vector3, end: Vector3, width?: number, orientation?: number) => void;
   setInactive: () => void;
 }
 
 export const Rainbow = forwardRef<RainbowApi, RainbowProps>(
-  ({ startRadius = 0, endRadius = 1, emissiveIntensity = 2.5, fade = 0, ...props }, fref) => {
+  ({ startRadius = 0, endRadius = 1, startFade = 0, endFade = 0, intensity = 1, ...props }, fref) => {
     const ref = useRef<Mesh>(null);
     const materialRef = useRef<RainbowMaterial | null>(null);
 
     useImperativeHandle(fref, () => ({
-      adjustBeam: (start: Vector3, end: Vector3, orientation: number = 1) => {
+      adjustBeam: (start: Vector3, end: Vector3, width: number = 1, orientation: number = 1) => {
         const direction = new Vector3().subVectors(end, start).normalize();
-        const adjustedStart = direction.clone().negate().multiplyScalar(startRadius * 2).add(start);
-        adjustedStart.addScaledVector(direction, startRadius);
+        const adjustedStart = direction.clone().negate().multiplyScalar(startRadius * width).add(start);
         const distance = adjustedStart.distanceTo(end);
-        const midPoint = new Vector3().lerpVectors(adjustedStart, end, 0.5);
+        const midPoint = new Vector3().lerpVectors(start, end, 0.5);
         const angle = Math.atan2(direction.y, direction.x);
         ref.current?.position.copy(midPoint);
-        ref.current?.rotation.set(0, 0, angle);
-        ref.current?.scale.set(distance, orientation, 1);
+        ref.current?.rotation.set(0, 0, angle - Math.PI / 2);
+        ref.current?.scale.set(width * orientation, distance, 1);
       },
       setInactive: () => {
         ref.current?.scale.set(0, 0, 0);
       }
     }), []);
 
-    useFrame((state, delta) => {
-      if (materialRef.current) {
-        materialRef.current.time += delta * materialRef.current.speed;
-      }
-    });
+    // useFrame((state, delta) => {
+    //   if (materialRef.current) {
+    //     materialRef.current.time += delta * materialRef.current.speed;
+    //   }
+    // });
 
     return (
-      <mesh ref={ref} {...props}>
+      <mesh ref={ref} {...props} scale={[0, 0, 0]}>
         <planeGeometry />
         <rainbowMaterial
-          ref={materialRef}
-          fade={fade}
+          ref={materialRef as any}
+          startFade={startFade}
+          endFade={endFade}
           startRadius={startRadius}
           endRadius={endRadius}
-          emissiveIntensity={emissiveIntensity}
-          ratio={1}
+          intensity={intensity}
           toneMapped={false}
         />
       </mesh>

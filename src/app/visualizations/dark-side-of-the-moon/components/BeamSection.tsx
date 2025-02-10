@@ -5,19 +5,19 @@ import { AdditiveBlending, DynamicDrawUsage, Group, InstancedMesh, Mesh, Object3
 import { Flare } from './Flare';
 
 export interface BeamSectionApi {
-  adjustBeam: (start: Vector3, end: Vector3) => void;
+  adjustBeam: (start: Vector3, end: Vector3, width?: number) => void;
   setInactive: () => void;
 }
 
 export interface BeamSectionProps {
-  width?: number;
   enableGlow?: boolean;
   enableFlare?: boolean;
   startFade?: number;
   endFade?: number;
+  intensity?: number;
 }
 
-export const BeamSection = forwardRef<BeamSectionApi, BeamSectionProps>(({ width = 1, enableFlare = false, enableGlow = false, startFade = 0, endFade = 0 }, fref) => {
+export const BeamSection = forwardRef<BeamSectionApi, BeamSectionProps>(({ enableFlare = false, enableGlow = false, startFade = 0, endFade = 0, intensity = 1 }, fref) => {
   const [glowRefTexture] = useTexture([
     require('../assets/lensflare/lensflare0_bw.jpg')
   ]);
@@ -28,7 +28,7 @@ export const BeamSection = forwardRef<BeamSectionApi, BeamSectionProps>(({ width
   const mainRef = useRef<Mesh>(null);
 
   useImperativeHandle(fref, () => ({
-    adjustBeam: (start: Vector3, end: Vector3) => {
+    adjustBeam: (start: Vector3, end: Vector3, width: number = 1) => {
       const distance = start.distanceTo(end);
       const midPoint = new Vector3().lerpVectors(start, end, 0.5);
       const direction = new Vector3().subVectors(end, start).normalize();
@@ -36,7 +36,7 @@ export const BeamSection = forwardRef<BeamSectionApi, BeamSectionProps>(({ width
 
       mainRef.current?.position.copy(midPoint);
       mainRef.current?.rotation.set(0, 0, angle - Math.PI / 2);
-      mainRef.current?.scale.set(width, distance, 1);
+      mainRef.current?.scale.set(width * 0.025, distance, 1);
 
       glowRef.current?.position.copy(end);
       glowRef.current?.scale.set(1, 1, 1);
@@ -55,8 +55,8 @@ export const BeamSection = forwardRef<BeamSectionApi, BeamSectionProps>(({ width
   return (
     <>
       <mesh ref={mainRef}>
-        <cylinderGeometry args={[0.01, 0.01, 1, 32]} />
-        <beamMaterial intensity={2} startFade={startFade} endFade={endFade} />
+        <planeGeometry />
+        <beamMaterial intensity={intensity} startFade={startFade} endFade={endFade} />
       </mesh>
       {enableGlow && <instancedMesh ref={glowRef} args={[undefined, undefined, 100]} instanceMatrix-usage={DynamicDrawUsage}>
         <planeGeometry />

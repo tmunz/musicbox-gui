@@ -38,6 +38,7 @@ extend({
         float linearGradient = startFadeFactor * endFadeFactor;
         float glow = linearGradient * intensity;
         gl_FragColor = vec4(color * glow, glow);
+        if (gl_FragColor.a < 0.1) discard;
       }
   `)
 });

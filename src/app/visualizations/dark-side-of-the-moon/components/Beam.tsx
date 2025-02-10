@@ -1,5 +1,5 @@
-import React, { useRef, useImperativeHandle, forwardRef } from 'react';
-import { Mesh, Vector3, Raycaster, Intersection } from 'three';
+import React, { useRef, useImperativeHandle, forwardRef, createRef } from 'react';
+import { Mesh, Vector3, Raycaster, Intersection, Object3D } from 'three';
 import { BeamSection, BeamSectionApi } from './BeamSection';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Rainbow, RainbowApi } from './Rainbow';
@@ -10,14 +10,15 @@ export interface BeamApi {
 
 interface BeamProps {
   maxBounces?: number;
-  hitObject: Mesh | null;
   enableRainbow?: boolean;
+  children?: React.ReactNode;
 }
 
-export const Beam = forwardRef<BeamApi, BeamProps>(({ hitObject, maxBounces = 10, enableRainbow = false }, ref) => {
+export const Beam = forwardRef<BeamApi, BeamProps>(({ maxBounces = 10, enableRainbow = false, children }, ref) => {
 
   const beamStartRef = useRef<{ start: Vector3, direction: Vector3 }>({ start: new Vector3(), direction: new Vector3(1, 0, 0) });
   const beamSectionsRef = useRef<(BeamSectionApi | RainbowApi | null)[]>([]);
+  const hitObjectsRefs = useRef<(React.RefObject<Object3D> | null)[]>([]);
   const { width, height } = useThree((state) => state.viewport);
   const far = Math.hypot(width / 2, height / 2);
   const { current: raycaster } = useRef<Raycaster>(new Raycaster());
@@ -26,16 +27,22 @@ export const Beam = forwardRef<BeamApi, BeamProps>(({ hitObject, maxBounces = 10
   const calculateBeamSection = (start: Vector3, direction: Vector3, startNormal?: Vector3): { start: Vector3, end: Vector3, endNormal?: Vector3, orientation: number } => {
     raycaster.set(start, direction);
     let intersections: Intersection[] = [];
-    if (hitObject) {
-      intersections = raycaster.intersectObject(hitObject, false);
-    }
-    const hit = intersections.find(intersection => intersection.distance >= 1e-6);
+
+    hitObjectsRefs.current.forEach((hitObjectRef) => {
+      const childObject = hitObjectRef?.current;
+      if (childObject instanceof Object3D) {
+        const hitResults = raycaster.intersectObject(childObject, false);
+        intersections = intersections.concat(hitResults);
+      }
+    });
+
+    const hit = intersections.find((intersection) => intersection.distance >= 1e-6);
     let orientation = 1;
     if (startNormal) {
-      orientation = -Math.sign(new Vector3().crossVectors(startNormal, direction).z);
+      orientation = Math.sign(new Vector3().crossVectors(startNormal, direction).z);
     }
     if (hit) {
-      const globalNormal = hit.face?.normal?.clone().applyMatrix4(hitObject!.matrixWorld).normalize();
+      const globalNormal = hit.face?.normal?.clone().applyMatrix4(hit.object.matrixWorld).normalize();
       return { start, end: hit.point, endNormal: globalNormal, orientation };
     } else {
       return { start, end: direction.multiplyScalar(far), orientation };
@@ -49,11 +56,11 @@ export const Beam = forwardRef<BeamApi, BeamProps>(({ hitObject, maxBounces = 10
     while (remainingRays > 0) {
       const prev = sections[sections.length - 1];
       const inDirection = new Vector3().subVectors(prev.end, prev.start).normalize();
-      const startNormal = prev.endNormal || new Vector3(1, 0, 0);
-      const outDirection = calculateOutDirection(inDirection, startNormal, -Math.PI / 8);
+      const startNormal = prev.endNormal;
+      if (!startNormal) break;
+      const outDirection = calculateOutDirection(inDirection, startNormal, -Math.PI / 5);
       const curr = calculateBeamSection(prev.end, outDirection, startNormal);
       sections.push(curr);
-      if (!curr.endNormal) break;
       remainingRays--;
     }
     return sections;
@@ -63,29 +70,51 @@ export const Beam = forwardRef<BeamApi, BeamProps>(({ hitObject, maxBounces = 10
     setBeam: (start: Vector3, direction: Vector3) => {
       beamStartRef.current = { start, direction };
     }
-  }), [hitObject]);
+  }), [children]);
 
   useFrame(() => {
     const sections = calculateBeamSections(beamStartRef.current.start, beamStartRef.current.direction);
     Array.from({ length: maxBounces + 1 }).forEach((_, i) => {
       const section = sections[i];
       if (section) {
-        beamSectionsRef.current[i]?.adjustBeam(section.start, section.end, section.orientation);
+        beamSectionsRef.current[i]?.adjustBeam(section.start, section.end, i < sections.length - 1 ? 0.8 : 2, section.orientation);
       } else {
         beamSectionsRef.current[i]?.setInactive();
       }
     });
   });
 
+
+  React.Children.forEach(children, (_, i) => {
+    if (!hitObjectsRefs.current[i]) {
+      hitObjectsRefs.current[i] = createRef<Object3D>();
+    }
+  });
+
   return (
     <>
-      <BeamSection ref={e => beamSectionsRef.current[0] = e} enableGlow enableFlare startFade={5} />
+      {React.Children.map(children, (child, index) =>
+        React.cloneElement(child as React.ReactElement, { ref: hitObjectsRefs.current[index] })
+      )}
+      <BeamSection ref={e => beamSectionsRef.current[0] = e} intensity={2} enableGlow enableFlare startFade={5} />
       {Array.from({ length: maxBounces }).map((_, i_) => {
         const i = i_ + 1;
         if (enableRainbow) {
-          return <Rainbow key={i} ref={e => beamSectionsRef.current[i] = e} startRadius={i / maxBounces / 4} endRadius={i ** 1.5 / maxBounces} fade={0.1} />;
+          return <Rainbow
+            key={i}
+            ref={e => beamSectionsRef.current[i] = e}
+            intensity={1.6}
+            startRadius={0.3}
+            endRadius={1}
+            startFade={1}
+            endFade={1}
+          />;
         } else {
-          return <BeamSection key={i} ref={e => beamSectionsRef.current[i] = e} />;
+          return <BeamSection
+            key={i}
+            ref={e => beamSectionsRef.current[i] = e}
+            intensity={2}
+          />;
         }
       })}
     </>
