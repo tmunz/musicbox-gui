@@ -16,6 +16,7 @@ extend({
       startRadius: 0,
       endRadius: 1,
       intensity: 1,
+      colorRatio: 1,
     },
     ` 
       varying vec2 vUv;
@@ -38,6 +39,7 @@ extend({
       uniform float endFade;
       uniform float startRadius;
       uniform float endRadius;
+      uniform float colorRatio;
       uniform float intensity;
 
       float _saturate (float x) {
@@ -67,10 +69,10 @@ extend({
 
       void main() {
         vec2 uv = vec2(vUv.y, vUv.x) - vec2(0.0, 0.5);
-        float a = atan(uv.y, uv.x) * 10.0;
-        float s = uv.x * (endRadius - startRadius) + startRadius;
-        float w = (uv.y / s + .5) * 300. + 400. + a;
-        vec3 color = spectral_zucconi6(w, 0.0); // [400, 700]
+        float spot = uv.x * (endRadius - startRadius) + startRadius;
+        vec3 spectralColor = spectral_zucconi6((uv.y / spot + .5) * 300. + 400., 0.0); // [400, 700]
+        vec3 whiteColor = vec3(1. - abs(uv.y) / spot * 2.);
+        vec3 color = mix(whiteColor, spectralColor, colorRatio);
         float startFadeFactor = smoothstep(0.0, startFade, vPositionY);
         float endFadeFactor = 1.0 - smoothstep(vLength - endFade, vLength, vPositionY);
         float linearGradient = startFadeFactor * endFadeFactor;
@@ -88,16 +90,17 @@ interface RainbowMaterial {
   endFade: number;
   startRadius: number;
   endRadius: number;
-  ratio: number;
+  colorRatio: number;
   intensity: number;
 }
 
 interface RainbowProps {
   startRadius?: number;
   endRadius?: number;
-  intensity?: number;
   startFade?: number;
   endFade?: number;
+  colorRatio?: number;
+  intensity?: number;
 }
 
 declare global {
@@ -114,7 +117,7 @@ export interface RainbowApi {
 }
 
 export const Rainbow = forwardRef<RainbowApi, RainbowProps>(
-  ({ startRadius = 0, endRadius = 1, startFade = 0, endFade = 0, intensity = 1, ...props }, fref) => {
+  ({ startRadius = 0, endRadius = 1, startFade = 0, endFade = 0, intensity = 1, colorRatio = 1, ...props }, fref) => {
     const ref = useRef<Mesh>(null);
     const materialRef = useRef<RainbowMaterial | null>(null);
 
@@ -134,12 +137,6 @@ export const Rainbow = forwardRef<RainbowApi, RainbowProps>(
       }
     }), []);
 
-    // useFrame((state, delta) => {
-    //   if (materialRef.current) {
-    //     materialRef.current.time += delta * materialRef.current.speed;
-    //   }
-    // });
-
     return (
       <mesh ref={ref} {...props} scale={[0, 0, 0]}>
         <planeGeometry />
@@ -149,6 +146,7 @@ export const Rainbow = forwardRef<RainbowApi, RainbowProps>(
           endFade={endFade}
           startRadius={startRadius}
           endRadius={endRadius}
+          colorRatio={colorRatio}
           intensity={intensity}
           toneMapped={false}
         />

@@ -99,6 +99,7 @@ export const Beam = forwardRef<BeamApi, BeamProps>(({ maxBounces = 10, enableRai
       <BeamSection ref={e => beamSectionsRef.current[0] = e} intensity={2} enableGlow enableFlare startFade={5} />
       {Array.from({ length: maxBounces }).map((_, i_) => {
         const i = i_ + 1;
+        const last = i === maxBounces;
         if (enableRainbow) {
           return <Rainbow
             key={i}
@@ -108,6 +109,7 @@ export const Beam = forwardRef<BeamApi, BeamProps>(({ maxBounces = 10, enableRai
             endRadius={1}
             startFade={1}
             endFade={1}
+            colorRatio={last ? 1 : 0.5}
           />;
         } else {
           return <BeamSection
