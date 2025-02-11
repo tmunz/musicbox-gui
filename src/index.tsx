@@ -11,6 +11,7 @@ if (appElement) {
 
   const getBaseName = () => {
     const pathSegments = window.location.pathname.split('/');
+    console.log('path', pathSegments);
     if (pathSegments.length > 1) {
       return `/${pathSegments[0]}`;
     }
