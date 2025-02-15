@@ -1,6 +1,5 @@
 import React from "react";
-import { ShaderImageThree } from "./ShaderImageThree";
-import { DEFAULT_IMAGE, ShaderImageProps } from "./ShaderImageUtils";
+import {  DEFAULT_IMAGE, ShaderImageProps, ShaderImageThree } from "./ShaderImageThree";
 
 export const ShaderImage = (props: ShaderImageProps & { color?: string, shaderDisabled?: boolean, width: number | string, height: number | string }) => {
 
