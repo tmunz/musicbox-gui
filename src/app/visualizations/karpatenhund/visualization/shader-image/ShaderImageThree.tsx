@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useEffect, useState } from 'react';
+import React, { useRef, useMemo, useEffect, useState, CSSProperties } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrthographicCamera } from '@react-three/drei';
 import { IUniform, Mesh, ShaderMaterial, Texture, TextureLoader } from 'three';
@@ -16,12 +16,22 @@ export const DEFAULT_FRAGMENT_SHADER = `
     gl_FragColor = texture2D(image, vUv);
   }`;
 
-export interface ShaderImageProps {
+const DEFAULT_VERTEX_SHADER = `
+  varying vec2 vUv; 
+
+  void main() {
+    vUv = uv; 
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+export interface ShaderImageThreeProps {
   imageUrls: Record<string, string>;
   objectFit?: ObjectFit;
   vertexShader?: string;
   fragmentShader?: string;
-  uniforms?: any
+  getUniforms?: () => Record<string, IUniform>;
+  style?: CSSProperties;
 }
 
 export function getScale(
@@ -49,26 +59,13 @@ export function getScale(
   }
 }
 
-interface Props extends ShaderImageProps {
-  uniforms?: { [uniform: string]: IUniform }
-}
-
-const DEFAULT_VERTEX_SHADER = `
-  varying vec2 vUv; 
-
-  void main() {
-    vUv = uv; 
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`;
-
 export const ShaderImageThreePlane = ({
   imageUrls,
   vertexShader = DEFAULT_VERTEX_SHADER,
   fragmentShader = DEFAULT_FRAGMENT_SHADER,
   objectFit = 'cover',
-  uniforms = {},
-}: Props) => {
+  getUniforms = () => ({}),
+}: ShaderImageThreeProps) => {
 
   const ref = useRef<Mesh>(null);
   const materialRef = useRef<ShaderMaterial>(null);
@@ -93,7 +90,7 @@ export const ShaderImageThreePlane = ({
     });
   }, [imageUrls]);
 
-  const getUniforms = () => {
+  const getUniformsWithTextures = () => {
     const imageUniforms = Object.keys(imageUrls).reduce((agg, id) => {
       const texture = textures[id];
       if (texture?.loaded) {
@@ -102,17 +99,17 @@ export const ShaderImageThreePlane = ({
         return agg;
       }
     }, {});
-    return { ...uniforms, ...imageUniforms, };
+    return { ...getUniforms(), ...imageUniforms, };
   }
 
   const shaderMaterial = useMemo(() => {
     return new ShaderMaterial({
       transparent: true,
-      uniforms: getUniforms(),
+      uniforms: getUniformsWithTextures(),
       vertexShader,
       fragmentShader,
     });
-  }, [vertexShader, fragmentShader, uniforms, textures]);
+  }, [vertexShader, fragmentShader, textures, getUniforms]);
 
   useEffect(() => {
     const mainTexture = textures[DEFAULT_IMAGE]
@@ -124,22 +121,27 @@ export const ShaderImageThreePlane = ({
   }, [size, textures, ref.current, objectFit]);
 
   useFrame(() => {
-    if (materialRef.current) {
-      materialRef.current.uniforms = getUniforms();
+    const material = materialRef.current;
+    if (material) {
+      const newUniforms = getUniformsWithTextures() as Record<string, IUniform>;
+      Object.entries(newUniforms).forEach(([key, uniform]) => {
+        material.uniforms[key].value = uniform.value;
+      });
+      materialRef.current.uniformsNeedUpdate = true;
     }
   });
 
   return (
     <mesh ref={ref}>
-      <planeGeometry args={[1, 1]} />
-      <primitive ref={materialRef} object={shaderMaterial} attach="material" />
+      <planeGeometry />
+      <primitive ref={materialRef} object={shaderMaterial} attach='material' />
     </mesh>
   );
 };
 
-export const ShaderImageThree = (props: Props) => {
+export const ShaderImageThree = (props: ShaderImageThreeProps) => {
   return (
-    <Canvas orthographic style={{ width: '100%', height: '100%' }}>
+    <Canvas orthographic style={props.style}>
       <OrthographicCamera
         makeDefault
         near={0}

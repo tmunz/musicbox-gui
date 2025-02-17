@@ -27,7 +27,8 @@ export const Bananas = ({ count = 1, depth = 20 }) => {
       <OrbitControls enabled={false}/>
       <color attach='background' args={['#fffffa']} />
       {Array.from({ length: count }, (_, i) => <Banana key={i} z={0} x={0} peeled={peeled} />)}
-      <Environment preset='sunset' />
+      <ambientLight intensity={3} />
+      <pointLight position={[0, 1, 2]} intensity={5} />
       <EffectComposer enableNormalPass={false} multisampling={0}>
         <DepthOfField
           target={[0, 0, 0]}

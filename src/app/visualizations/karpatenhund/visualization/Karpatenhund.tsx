@@ -10,7 +10,7 @@ export interface KarpatenhundProps {
 export const Karpatenhund = ({ sampleProvider, canvas }: KarpatenhundProps) => {
   return (
     <div style={{ background: '#fda600', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-      <Cat width={canvas.width * 0.8} height={canvas.height * 0.8} />
+      <Cat width={canvas.width * 0.8} height={canvas.height * 0.8} sampleProvider={sampleProvider} />
     </div>
   );
 }

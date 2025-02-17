@@ -1,12 +1,13 @@
-import React from "react";
-import {  DEFAULT_IMAGE, ShaderImageProps, ShaderImageThree } from "./ShaderImageThree";
+import React, { Suspense } from 'react';
+import { DEFAULT_IMAGE, ShaderImageThreeProps, ShaderImageThree } from './ShaderImageThree';
 
-export const ShaderImage = (props: ShaderImageProps & { color?: string, shaderDisabled?: boolean, width: number | string, height: number | string }) => {
+export const ShaderImage = (props: ShaderImageThreeProps & { color?: string, shaderDisabled?: boolean, width: number | string, height: number | string }) => {
+
+  const style = { width: '100%', height: '100%', objectFit: props.objectFit ?? 'contain' };
 
   return <div className='shader-image' style={{ backgroundColor: props.color ?? 'none', position: 'relative', width: props.width, height: props.height }}>
-    <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, opacity: props.shaderDisabled ? 0 : 1 }}>
-      <ShaderImageThree {...props} />
-    </div>
-    <img src={props.imageUrls[DEFAULT_IMAGE]} style={{ width: '100%', height: '100%', objectFit: props.objectFit ?? 'cover' }} />
+    <Suspense fallback={<img src={props.imageUrls[DEFAULT_IMAGE]} style={style} />}>
+      <ShaderImageThree style={style} {...props} />
+    </Suspense>
   </div>;
 }

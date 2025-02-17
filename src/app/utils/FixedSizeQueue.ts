@@ -12,7 +12,7 @@ export class FixedSizeQueue<T> {
       throw new Error('Queue size must be greater than 0.');
     }
     this.size = size;
-    this.queue = Array(size).fill(defaultValue);
+    this.queue = new Array(size).fill(defaultValue);
   }
 
   push(item: T): void {
@@ -21,7 +21,7 @@ export class FixedSizeQueue<T> {
       this.queue.pop();
     }
   }
-  
+
   get(i: number): T {
     return this.queue[i];
   }
@@ -35,9 +35,12 @@ export class FixedSizeQueue<T> {
   }
 
   setSize(size: number): void {
+    if (size <= 0) {
+      throw new Error('Queue size must be greater than 0.');
+    }
     this.size = size;
     if (this.queue.length > size) {
-      this.queue = this.queue.slice(0, size);
+      this.queue.length = size;
     }
   }
 }

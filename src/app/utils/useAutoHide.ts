@@ -1,34 +1,42 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-export function useAutoHide(timeout: number = 3000) {
+export function useAutoHide(timeout: number = 3000, condition: () => boolean = () => true) {
   const [visible, setVisible] = useState(true);
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const resetTimer = useCallback(() => {
+  const restartTimeout = () => {
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+    }
+    hideTimeoutRef.current = setTimeout(() => {
+      if (condition()) {
+        setVisible(false);
+      }
+    }, timeout);
+  };
+
+  const resetVisibility = () => {
     setVisible(true);
-  }, []);
+    restartTimeout();
+  };
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-
-    const handleActivity = () => {
-      resetTimer();
-      clearTimeout(timer);
-      timer = setTimeout(() => setVisible(false), timeout);
-    };
-
-    document.addEventListener('mousemove', handleActivity);
-    document.addEventListener('keydown', handleActivity);
-    document.addEventListener('touchstart', handleActivity);
-
-    timer = setTimeout(() => setVisible(false), timeout);
+    const events = ['mousemove', 'pointerdown', 'keydown', 'scroll', 'touchstart'];
+    events.forEach(event => window.addEventListener(event, resetVisibility));
 
     return () => {
-      document.removeEventListener('mousemove', handleActivity);
-      document.removeEventListener('keydown', handleActivity);
-      document.removeEventListener('touchstart', handleActivity);
-      clearTimeout(timer);
+      events.forEach(event => window.removeEventListener(event, resetVisibility));
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
     };
-  }, [timeout, resetTimer]);
+  }, [timeout]);
+
+  useEffect(() => {
+    if (visible) {
+      restartTimeout();
+    }
+  }, [visible]);
 
   return visible;
 }
