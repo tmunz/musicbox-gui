@@ -1,34 +1,29 @@
-import React, { useMemo } from 'react'
+import React, { useRef } from 'react'
 import { ShaderImage } from './shader-image/ShaderImage';
 import { SampleProvider } from '../../../audio/SampleProvider';
-import { DataTexture, RedFormat, UnsignedByteType, Vector2 } from 'three';
+import { useSampleProviderTexture } from '../../../audio/useSampleProviderTexture';
 
 export interface CatProps {
   width: number;
   height: number;
-  sampleProvider: SampleProvider; // UInt8[][] -- [sampleOverTime][frequencyBands as 0-255]
+  sampleProvider: SampleProvider;
 }
 
 export const Cat = ({ width, height, sampleProvider }: CatProps) => {
 
-  const imageUrls = useMemo(() => ({
+  const [sampleTexture, updateSampleTexture] = useSampleProviderTexture(sampleProvider);
+  const { current: imageUrls } = useRef({
     image: require('./karpatenhund_3_cat_full_orig.png'),
     imageFlat: require('./karpatenhund_3_cat_full_flat.png'),
-  }), []);
+  });
 
   const getUniforms = () => {
-    const dataWidth = sampleProvider.get(0).length;
-    const dataHeight = sampleProvider.getFullSize();
-    const textureData = new Uint8Array(dataWidth * dataHeight);
-    for (let i = 0; i < sampleProvider.getFullSize(); i++) {
-      textureData.set(sampleProvider.get(i), i * dataWidth);
-    }
-    const sampleTexture = new DataTexture(textureData, dataWidth, dataHeight, RedFormat, UnsignedByteType);
-    sampleTexture.needsUpdate = true;
+    updateSampleTexture();
     return {
       sampleData: { value: sampleTexture },
-      sampleDataSize: { value: new Vector2(dataWidth, dataHeight) },
-      animationActive: { value: 1 }
+      sampleDataSize: { value: { x: sampleTexture.image.width, y: sampleTexture.image.height } },
+      sampleDataAvg: { value: sampleProvider.getAvg()[0] / 255 },
+      samplesActive: { value: sampleProvider.active ? 1 : 0 }
     }
   };
 
@@ -45,7 +40,8 @@ export const Cat = ({ width, height, sampleProvider }: CatProps) => {
       uniform sampler2D imageFlat;
       uniform sampler2D sampleData;
       uniform vec2 sampleDataSize;
-      uniform int animationActive;
+      uniform float sampleDataAvg;
+      uniform int samplesActive;
       in vec2 vUv;
 
       vec4 _gaussianBlur(sampler2D img, vec2 uv, float blurSize, int kernelSize, vec2 resolution) {
@@ -64,31 +60,36 @@ export const Cat = ({ width, height, sampleProvider }: CatProps) => {
         return color / weightSum;  
       }
 
+      float _shapeFactor (float x) {
+        return 0.9 * (cos(12. * x) / 3.0 + .5) * (1. - x / 2.) + 0.1;
+      }
+
       void main() {
         vec4 color;
         vec2 uv = vUv;
 
-        if (animationActive == 0) {
+        if (samplesActive == 0) {
           color = texture(image, uv);
         } else {
-          float startX = 0.0;
-          float endX = 1.0;
-          float startY = 0.5;
-          float endY = 0.8;
-
-          if (startX < uv.x && uv.x < endX && startY < uv.y && uv.y < endY) {
-            float dateWidth = endX - startX;
-            float dataHeight = endY - startY;
-            vec2 correctedUv = (uv - vec2(startX, startY)) / vec2(dateWidth, dataHeight);
+          float baseY = 0.1;
+          float avgFactor = 0.1;
+          float dataX0 = 0.0;
+          float dataX1 = 1.0;
+          float dataY0 = 0.5;
+          float dataY1 = 0.8;
+          if (dataX0 <= uv.x && uv.x <= dataX1 && dataY0 <= uv.y) {
+            float dateWidth = dataX1 - dataX0;
+            float dataHeight = dataY1 - dataY0;
+            vec2 correctedUv = (uv - vec2(dataX0, dataY0)) / vec2(dateWidth, dataHeight);
             vec4 sampleColor = _gaussianBlur(sampleData, correctedUv, 1. / sampleDataSize.x, 25, sampleDataSize);
-            float factor = 0.2; // (endX - uv.x) * dataHeight;
-            uv.y += -sampleColor.r * factor * correctedUv.y;
-            color = texture(imageFlat, uv);
+            float factor = dataHeight;
+            uv.y -= sampleColor.r * factor * _shapeFactor(uv.x) * correctedUv.y;
             // sampleColor.rgb = vec3(sampleColor.r);
             // color = sampleColor;
-          } else {
-            color = texture(imageFlat, uv);
           }
+
+          uv.y -= sampleDataAvg * clamp(uv.y - baseY, 0., dataY0 - baseY) * avgFactor;
+          color = texture(imageFlat, uv);
         }
         gl_FragColor = color;
       }

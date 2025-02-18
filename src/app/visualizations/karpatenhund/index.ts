@@ -12,7 +12,7 @@ const unknownPleasures: Visualization = {
   component: Karpatenhund,
   color: '#fda600',
   settings: {
-    samples: createSampleSettings(32, 10),
+    samples: createSampleSettings(32, 1),
   }
 };
 

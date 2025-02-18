@@ -17,7 +17,7 @@ export function DarkSideOfTheMoon({ sampleProvider, canvas }: DarkSideOfTheMoonP
   return (
     <Canvas orthographic gl={{ antialias: false }} camera={{ position: [0, 0, 100], zoom: 70 }}>
       <color attach='background' args={['black']} />
-      <Scene />
+      <Scene sampleProvider={sampleProvider} />
       <EffectComposer>
         <Bloom mipmapBlur intensity={0.5} luminanceThreshold={1} luminanceSmoothing={0} />
         <LUT lut={texture} />
@@ -36,20 +36,24 @@ function Scene({ sampleProvider }: { sampleProvider?: SampleProvider }) {
   const { current: target } = useRef(new Vector3(0, 0.3, 0));
 
   const getInputPosition = (pointer: Vector2, viewport: Size): [number, number, number] => {
-    const x = target.x - viewport.width / 2;
-    const y = target.y + x * Math.tan(0.25);
-
+    let x = target.x - viewport.width / 2;
     if (sampleProvider) {
-      // TODO: Implement audio visualization
-      return [x, y, 0];
+      if (sampleProvider.active) {
+        x *= 0.2 + sampleProvider.getAvg()[0] / 255 * 0.8;
+      }
     } else {
-      if (pointer.x !== 0 || pointer.y !== 0) setInitialState(false);
+      if (pointer.x !== 0 || pointer.y !== 0) {
+        setInitialState(false);
+      }
       if (!initialState) {
-        return [pointer.x * viewport.width / 2, pointer.y * viewport.height / 2, 0];
-      } else {
-        return [x, y, 0];
+        return [
+          pointer.x * viewport.width / 2,
+          pointer.y * viewport.height / 2,
+          0
+        ];
       }
     }
+    return [x, target.y + x * Math.tan(0.25), 0];
   }
 
   useFrame(({ pointer, viewport }) => {
@@ -72,7 +76,7 @@ function Scene({ sampleProvider }: { sampleProvider?: SampleProvider }) {
       <pointLight position={[0, 10, 0]} intensity={0.05} />
       <pointLight position={[-10, 0, 0]} intensity={0.05} />
       <spotLight ref={spotRef} intensity={1} distance={7} angle={1} penumbra={1} position={[0, 0, 1]} />
-      <Beam ref={beamRef} maxBounces={2} deflection={deflection} >
+      <Beam ref={beamRef} maxBounces={2} deflection={deflection} data={sampleProvider} >
         <Prism position={[0, -0.5, 0]} />
       </Beam >
     </>

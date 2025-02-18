@@ -12,7 +12,7 @@ const darkSideOfTheMoon: Visualization = {
   component: DarkSideOfTheMoon,
   color: '#060606',
   settings: {
-    samples: createSampleSettings(),
+    samples: createSampleSettings(6, 42),
   }
 };
 

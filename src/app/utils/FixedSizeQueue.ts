@@ -4,8 +4,8 @@
  * removed automatically when the queue exceeds its maximum size.
  */
 export class FixedSizeQueue<T> {
-  private queue: T[];
-  private size: number;
+  protected queue: T[];
+  protected size: number;
 
   constructor(size: number, defaultValue: T) {
     if (size <= 0) {

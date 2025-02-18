@@ -69,7 +69,7 @@ export const useAudioAnalysis = (streamProvider: Promise<MediaStream | null>, fr
       if (audioData) {
         audioFrames.push(audioData);
       } else {
-        audioFrames.push(new Uint8Array(frequencyBands).fill(0));
+        audioFrames.push();
       }
     }, interval);
     return () => {

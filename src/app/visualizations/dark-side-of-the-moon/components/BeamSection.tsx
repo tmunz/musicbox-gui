@@ -1,9 +1,11 @@
 import './BeamMaterial';
-import React, { useImperativeHandle, forwardRef, useRef } from 'react';
+import React, { useImperativeHandle, forwardRef, useRef, useEffect, useState } from 'react';
 import { useTexture } from '@react-three/drei';
 import { AdditiveBlending, DynamicDrawUsage, Group, InstancedMesh, Mesh, Object3DEventMap, Vector3 } from 'three';
 import { Flare } from './Flare';
-import { MeshProps } from '@react-three/fiber';
+import { MeshProps, useFrame } from '@react-three/fiber';
+import { SampleProvider } from '../../../audio/SampleProvider';
+import { useSampleProviderTexture } from '../../../audio/useSampleProviderTexture';
 
 export interface BeamSectionApi {
   adjustBeam: (start: Vector3, end: Vector3, width?: number, orientation?: number) => void;
@@ -19,6 +21,7 @@ export interface BeamSectionProps extends MeshProps {
   intensity?: number;
   enableGlow?: boolean;
   enableFlare?: boolean;
+  data?: SampleProvider;
 }
 
 export const BeamSection = forwardRef<BeamSectionApi, BeamSectionProps>(({ startRadius = 0.1, endRadius = 0.1, startFade = 0, endFade = 0, intensity = 1, colorRatio = 1, enableFlare = false, enableGlow = false, ...props }, fref) => {
@@ -30,6 +33,18 @@ export const BeamSection = forwardRef<BeamSectionApi, BeamSectionProps>(({ start
   const glowRef = useRef<InstancedMesh>(null);
   const flareRef = useRef<Group<Object3DEventMap>>(null);
   const mainRef = useRef<Mesh>(null);
+
+  const [dataActive, setDataActive] = useState(false);
+  const [sampleTexture, applyToSampleTexture] = useSampleProviderTexture(props.data);
+
+  useFrame(() => {
+    if (props.data) {
+      applyToSampleTexture();
+      if (props.data.active !== dataActive) {
+        setDataActive(props.data.active);
+      }
+    }
+  });
 
   useImperativeHandle(fref, () => ({
     adjustBeam: (start: Vector3, end: Vector3, width: number = 1, orientation: number = 1) => {
@@ -72,6 +87,9 @@ export const BeamSection = forwardRef<BeamSectionApi, BeamSectionProps>(({ start
           transparent
           blending={AdditiveBlending}
           depthWrite={false}
+          sampleData={sampleTexture}
+          sampleDataSize={{ x: sampleTexture.image.width, y: sampleTexture.image.height }}
+          samplesActive={dataActive ? 1 : 0}
         />
       </mesh>
       {enableGlow && <instancedMesh ref={glowRef} args={[undefined, undefined, 100]} instanceMatrix-usage={DynamicDrawUsage}>

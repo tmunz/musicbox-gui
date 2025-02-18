@@ -1,6 +1,6 @@
 import { extend, Object3DNode } from '@react-three/fiber';
 import { shaderMaterial } from '@react-three/drei';
-import { ShaderMaterial } from 'three';
+import { DataTexture, ShaderMaterial } from 'three';
 
 // Based on
 // "Improving the Rainbow" by Alan Zucconi: https://www.alanzucconi.com/2017/07/15/improving-the-rainbow-2/
@@ -15,6 +15,9 @@ extend({
       endRadius: 1,
       intensity: 1,
       colorRatio: 1,
+      sampleData: null,
+      sampleDataSize: null,
+      samplesActive: 0,
     },
     ` 
       varying vec2 vUv;
@@ -30,6 +33,8 @@ extend({
     `,
 
     ` 
+      precision mediump float;
+
       varying vec2 vUv;
       varying float vPositionY;
       varying float vLength;
@@ -39,6 +44,9 @@ extend({
       uniform float endRadius;
       uniform float colorRatio;
       uniform float intensity;
+      uniform sampler2D sampleData;
+      uniform vec2 sampleDataSize;
+      uniform int samplesActive;
 
       float _saturate (float x) {
         return min(1.0, max(0.0,x));
@@ -66,16 +74,21 @@ extend({
       }
 
       void main() {
-        vec2 uv = vec2(vUv.y, vUv.x) - vec2(0.0, 0.5);
+        vec2 uv = vec2(vUv.y, vUv.x - 0.5);
         float spotX = uv.x * (endRadius - startRadius) + startRadius;
         float spotFactor = 1. - abs(uv.y) / spotX * 2.;
+        float sampleDataFactor = 1.0;
+        if (samplesActive == 1) {	
+          sampleDataFactor += texture2D(sampleData, vec2(spotFactor, uv.x)).r - 0.3; 
+        }
         vec3 spectralColor = spectral_zucconi6((uv.y / spotX + .5) * 300. + 400., 0.0); // [400, 700]
         vec3 whiteColor = vec3(spotFactor);
         vec3 color = mix(whiteColor, spectralColor, colorRatio);
         float startFadeFactor = smoothstep(0.0, startFade, vPositionY);
         float endFadeFactor = 1.0 - smoothstep(vLength - endFade, vLength, vPositionY);
-        float brightness = smoothstep(0., 0.5, color.r + color.g + color.b);  
-        gl_FragColor = vec4(color * intensity * brightness, spotFactor * startFadeFactor * endFadeFactor);
+        float brightness = smoothstep(0., 0.5, color.r + color.g + color.b) * intensity;
+        gl_FragColor = vec4(color * brightness * sampleDataFactor, spotFactor * startFadeFactor * endFadeFactor);
+
         if (gl_FragColor.a < 0.0001) discard;
       }
     `
@@ -89,6 +102,9 @@ export interface BeamMaterial {
   endRadius: number;
   colorRatio: number;
   intensity: number;
+  sampleData?: DataTexture,
+  sampleDataSize?: { x: number, y: number },
+  samplesActive?: number;
 }
 
 declare global {
