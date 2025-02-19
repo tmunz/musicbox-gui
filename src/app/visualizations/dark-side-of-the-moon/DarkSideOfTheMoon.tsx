@@ -9,15 +9,16 @@ import { SampleProvider } from '../../audio/SampleProvider';
 
 export interface DarkSideOfTheMoonProps {
   sampleProvider: SampleProvider;
-  canvas: { width: number, height: number }
+  canvas?: { width: number, height: number }
+  volumeAmountIndicator?: number;
 }
 
-export function DarkSideOfTheMoon({ sampleProvider, canvas }: DarkSideOfTheMoonProps) {
+export const DarkSideOfTheMoon = ({ sampleProvider, volumeAmountIndicator }: DarkSideOfTheMoonProps) => {
   const texture = useLoader(LUTCubeLoader, require('./assets/F-6800-STD.cube')) as unknown as Texture;
   return (
     <Canvas orthographic gl={{ antialias: false }} camera={{ position: [0, 0, 100], zoom: 70 }}>
       <color attach='background' args={['black']} />
-      <Scene sampleProvider={sampleProvider} />
+      <Scene sampleProvider={sampleProvider} volumeAmountIndicator={volumeAmountIndicator} />
       <EffectComposer>
         <Bloom mipmapBlur intensity={0.5} luminanceThreshold={1} luminanceSmoothing={0} />
         <LUT lut={texture} />
@@ -26,7 +27,7 @@ export function DarkSideOfTheMoon({ sampleProvider, canvas }: DarkSideOfTheMoonP
   );
 }
 
-function Scene({ sampleProvider }: { sampleProvider?: SampleProvider }) {
+const Scene = ({ sampleProvider, volumeAmountIndicator = 0 }: { sampleProvider?: SampleProvider, volumeAmountIndicator?: number }) => {
   const [initialState, setInitialState] = useState(true);
   const ambientRef = useRef<AmbientLight | null>(null);
   const spotRef = useRef<SpotLight | null>(null);
@@ -37,9 +38,11 @@ function Scene({ sampleProvider }: { sampleProvider?: SampleProvider }) {
 
   const getInputPosition = (pointer: Vector2, viewport: Size): [number, number, number] => {
     let x = target.x - viewport.width / 2;
+    let angle = 0.25;
     if (sampleProvider) {
       if (sampleProvider.active) {
-        x *= 0.2 + sampleProvider.getAvg()[0] / 255 * 0.8;
+        angle -= pointer.y * 0.01;
+        x *= (1 - volumeAmountIndicator) + sampleProvider.getAvg()[0] / 255 * volumeAmountIndicator;
       }
     } else {
       if (pointer.x !== 0 || pointer.y !== 0) {
@@ -53,7 +56,7 @@ function Scene({ sampleProvider }: { sampleProvider?: SampleProvider }) {
         ];
       }
     }
-    return [x, target.y + x * Math.tan(0.25), 0];
+    return [x, target.y + x * Math.tan(angle), 0];
   }
 
   useFrame(({ pointer, viewport }) => {

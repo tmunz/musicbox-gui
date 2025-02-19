@@ -31,16 +31,34 @@ export class SampleProvider extends FixedSizeQueue<Uint8Array> {
     }
   }
 
-  flat = () => {  
+  flat = () => {
     return this.queue.reduce((acc: Uint8Array, value: Uint8Array, i: number) => {
       acc.set(value, i * this.frequencyBands);
       return acc;
     }, new Uint8Array(this.sampleSize * this.frequencyBands));
   }
 
-  getAvg = () => {
+  getAvg = (): number[] => {
     return this.queue.map((sample) => {
       return sample.reduce((acc, val) => acc + val, 0) / sample.length;
     });
   }
+
+  getMax = (): { max: number; sampleIndex: number }[] => {
+    if (this.queue.length === 0 || this.queue[0].length === 0) return [];
+  
+    return new Array(this.frequencyBands).fill(0).map((_, index: number) => {
+      let max = 0;
+      let sampleIndex = 0;
+  
+      this.queue.forEach((sample, i) => {
+        if (sample[index] > max) {
+          max = sample[index];
+          sampleIndex = i;
+        }
+      });
+  
+      return { max, sampleIndex };
+    });
+  };
 }

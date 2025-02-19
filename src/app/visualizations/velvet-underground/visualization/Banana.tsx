@@ -1,11 +1,10 @@
-import { useGLTF } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
-import React from "react";
-import { Suspense, useEffect, useRef } from "react";
-import { AnimationAction, AnimationClip, AnimationMixer, Clock, Group, LoopOnce } from "three";
+import React, { forwardRef } from 'react';
+import { useGLTF } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
+import { Suspense, useEffect, useRef } from 'react';
+import { AnimationAction, AnimationClip, AnimationMixer, Clock, Group, LoopOnce } from 'three';
 
-export const Banana = ({ x = 0, z = 0, peeled = false }) => {
-  const modelRef = useRef<Group>(null!);
+export const Banana = forwardRef<Group, { peeled: boolean }>(({ peeled }, ref) => {
   const file = useGLTF(require('./assets/banana-peel.glb')) as unknown as {
     scene: any;
     nodes: any;
@@ -54,11 +53,11 @@ export const Banana = ({ x = 0, z = 0, peeled = false }) => {
 
   return (
     <Suspense fallback={null}>
-      <group ref={modelRef} position={[x, 0, z]} scale={[0.6, 0.6, 0.6]}>
+      <group ref={ref} scale={[0.6, 0.6, 0.6]}>
         {file && (
           <primitive object={file.scene} />
         )}
       </group>
     </Suspense>
   );
-};
+});

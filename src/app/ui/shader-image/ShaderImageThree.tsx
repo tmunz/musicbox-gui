@@ -1,7 +1,7 @@
 import React, { useRef, useMemo, useEffect, useState, CSSProperties } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrthographicCamera } from '@react-three/drei';
-import { IUniform, Mesh, ShaderMaterial, Texture, TextureLoader } from 'three';
+import { ClampToEdgeWrapping, IUniform, Mesh, NearestFilter, ShaderMaterial, Texture, TextureLoader } from 'three';
 
 export type ObjectFit = 'contain' | 'cover' | 'fill';
 
@@ -93,7 +93,9 @@ export const ShaderImageThreePlane = ({
   const getUniformsWithTextures = () => {
     const imageUniforms = Object.keys(imageUrls).reduce((agg, id) => {
       const texture = textures[id];
-      if (texture?.loaded) {
+      if (texture?.loaded && texture.data) {
+        texture.data.magFilter = NearestFilter;
+        texture.data.minFilter = NearestFilter;
         return { ...agg, [id]: { value: texture.data } };
       } else {
         return agg;
@@ -134,7 +136,7 @@ export const ShaderImageThreePlane = ({
   return (
     <mesh ref={ref}>
       <planeGeometry />
-      <primitive ref={materialRef} object={shaderMaterial} attach='material' />
+      <primitive ref={materialRef} object={shaderMaterial} attach='material' transparency />
     </mesh>
   );
 };

@@ -1,4 +1,5 @@
 import { createSampleSettings } from "../../audio/SampleSettings";
+import { SettingType } from "../../settings/Setting";
 import { Visualization } from "../Visualization";
 import { DarkSideOfTheMoon } from "./DarkSideOfTheMoon";
 
@@ -13,6 +14,20 @@ const darkSideOfTheMoon: Visualization = {
   color: '#060606',
   settings: {
     samples: createSampleSettings(6, 42),
+    visualization: {
+      volumeAmountIndicator: {
+        id: 'volumeAmountIndicator',
+        name: 'volume indicator',
+        description: 'The maximum relative length change of the volume indicator.',
+        type: SettingType.NUMBER,
+        value: 0.4,
+        params: {
+          min: 0,
+          max: 1,
+          step: 0.1
+        }
+      }
+    }
   }
 };
 

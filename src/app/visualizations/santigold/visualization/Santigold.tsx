@@ -1,17 +1,16 @@
 import React from 'react';
-import { Cat } from './Cat';
 import { SampleProvider } from '../../../audio/SampleProvider';
 
-export interface KarpatenhundProps {
+export interface SantigoldProps {
   sampleProvider: SampleProvider;
   canvas: { width: number, height: number };
 }
 
-export const Karpatenhund = ({ sampleProvider, canvas }: KarpatenhundProps) => {
-  const sizeRatio = 0.8;
+export const Santigold = ({ sampleProvider, canvas }: SantigoldProps) => {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-      <Cat width={canvas.width * sizeRatio} height={canvas.height * sizeRatio} sampleProvider={sampleProvider} />
+      <img src={require('./santigold_plain.jpg')} alt="Santigold" style={{ height: '100%' }} />
+      coming soon
     </div>
   );
 }

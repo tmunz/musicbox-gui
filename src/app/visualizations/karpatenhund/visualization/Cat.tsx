@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { ShaderImage } from './shader-image/ShaderImage';
+import { ShaderImage } from '../../../ui/shader-image/ShaderImage';
 import { SampleProvider } from '../../../audio/SampleProvider';
 import { useSampleProviderTexture } from '../../../audio/useSampleProviderTexture';
 

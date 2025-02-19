@@ -18,6 +18,7 @@ extend({
       sampleData: null,
       sampleDataSize: null,
       samplesActive: 0,
+      sampleRatio: 1,
     },
     ` 
       varying vec2 vUv;
@@ -47,6 +48,7 @@ extend({
       uniform sampler2D sampleData;
       uniform vec2 sampleDataSize;
       uniform int samplesActive;
+      uniform float sampleRatio;
 
       float _saturate (float x) {
         return min(1.0, max(0.0,x));
@@ -78,8 +80,9 @@ extend({
         float spotX = uv.x * (endRadius - startRadius) + startRadius;
         float spotFactor = 1. - abs(uv.y) / spotX * 2.;
         float sampleDataFactor = 1.0;
+
         if (samplesActive == 1) {	
-          sampleDataFactor += texture2D(sampleData, vec2(spotFactor, uv.x)).r - 0.3; 
+          sampleDataFactor = texture2D(sampleData, vec2(spotFactor, uv.x)).r; 
         }
         vec3 spectralColor = spectral_zucconi6((uv.y / spotX + .5) * 300. + 400., 0.0); // [400, 700]
         vec3 whiteColor = vec3(spotFactor);
