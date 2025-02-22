@@ -13,12 +13,13 @@ interface BeamProps {
   enableRainbow?: boolean;
   children?: React.ReactNode;
   data?: SampleProvider;
+  dataRatio?: number;
   deflection?: (inDirection: Vector3, faceNormal: Vector3) => Vector3;
 }
 
 const MIRROR_FUNCTION = (inDirection: Vector3, faceNormal: Vector3) => new Vector3().subVectors(inDirection, faceNormal.multiplyScalar(2 * inDirection.dot(faceNormal))).normalize();
 
-export const Beam = forwardRef<BeamApi, BeamProps>(({ maxBounces = 10, deflection = MIRROR_FUNCTION, data, children }, ref) => {
+export const Beam = forwardRef<BeamApi, BeamProps>(({ maxBounces = 10, deflection = MIRROR_FUNCTION, data, dataRatio, children }, ref) => {
 
   const beamStartRef = useRef<{ start: Vector3, direction: Vector3 }>({ start: new Vector3(), direction: new Vector3(1, 0, 0) });
   const beamSectionsRef = useRef<(BeamSectionApi | null)[]>([]);
@@ -80,7 +81,7 @@ export const Beam = forwardRef<BeamApi, BeamProps>(({ maxBounces = 10, deflectio
     Array.from({ length: maxBounces + 1 }).forEach((_, i) => {
       const section = sections[i];
       if (section) {
-        beamSectionsRef.current[i]?.adjustBeam(section.start, section.end, i < sections.length - 1 ? 0.8 : 2, section.orientation);
+        beamSectionsRef.current[i]?.adjustBeam(section.start, section.end, i < sections.length - 1 ? 1 : 2.2, section.orientation);
       } else {
         beamSectionsRef.current[i]?.setInactive();
       }
@@ -102,11 +103,11 @@ export const Beam = forwardRef<BeamApi, BeamProps>(({ maxBounces = 10, deflectio
       {Array.from({ length: maxBounces + 1 }).map((_, i) => {
         let beamSectionProps: BeamSectionProps = {};
         if (i === 0) {
-          beamSectionProps = { intensity: 3, enableGlow: true, enableFlare: true, startFade: 5 };
-        } else if (i === maxBounces) {
-          beamSectionProps = { intensity: 1.8, startRadius: 0.3, endRadius: 1, startFade: 1, endFade: 1, colorRatio: 1, data };
+          beamSectionProps = { intensity: 1.8, enableGlow: true, enableFlare: true, startFade: 5, colorRatio: 0.2 };
+        } else if (i !== maxBounces) {
+          beamSectionProps = { intensity: 1.4, startSize: 0.1, endSize: 0.6, startFade: 0.3, endFade: 7, colorRatio: 0.2 };
         } else {
-          beamSectionProps = { intensity: 2.2, startRadius: 0.2, endRadius: 1, startFade: 1, endFade: 1, colorRatio: 0.6 };
+          beamSectionProps = { intensity: 1.2, startSize: 0.3, endSize: 1, startFade: 2, endFade: 8, colorRatio: 1, data, dataRatio };
         }
         return <BeamSection
           key={i}

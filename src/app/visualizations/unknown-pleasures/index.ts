@@ -1,7 +1,7 @@
-import { createSampleSettings } from "../../audio/SampleSettings";
-import { SettingType } from "../../settings/Setting";
-import { Visualization } from "../Visualization";
-import { UnknownPleasures } from "./visualization/UnknownPleasures";
+import { createSampleSettings } from '../../audio/SampleSettings';
+import { SettingType } from '../../settings/Setting';
+import { Visualization } from '../Visualization';
+import { UnknownPleasures } from './visualization/UnknownPleasures';
 
 const unknownPleasures: Visualization = {
   id: 'unknown-pleasures',

@@ -28,18 +28,18 @@ export const Flare = forwardRef(({ streak, visible, ...props }: FlareProps, flar
     <group ref={flareRef} {...props} visible={visible} dispose={null}>
       <Instances frames={visible ? Infinity : 1}>
         <planeGeometry />
-        <meshBasicMaterial map={dotTexture} transparent opacity={1} blending={AdditiveBlending} depthWrite={false} toneMapped={false} />
+        <meshBasicMaterial map={dotTexture} transparent opacity={0.4} blending={AdditiveBlending} depthWrite={false} toneMapped={false} />
         <group ref={groupRef}>
           <Instance scale={0.5} />
           <Instance scale={1.25} />
           <Instance scale={0.75} />
           <Instance scale={1.5} />
-          <Instance scale={2} position={[0, 0, -0.7]} />
+          <Instance scale={2} />
         </group>
       </Instances>
       <mesh scale={0.2}>
         <planeGeometry />
-        <meshBasicMaterial map={glowTexture} transparent opacity={1} blending={AdditiveBlending} depthWrite={false} toneMapped={false} />
+        <meshBasicMaterial map={glowTexture} transparent opacity={0.4} blending={AdditiveBlending} depthWrite={false} toneMapped={false} />
       </mesh>
       <mesh scale={streak}>
         <planeGeometry />

@@ -6,7 +6,7 @@ export const ShaderImage = (props: ShaderImageThreeProps & { color?: string, sha
   const style = { width: '100%', height: '100%', objectFit: props.objectFit ?? 'contain' };
 
   return <div className='shader-image' style={{ backgroundColor: props.color ?? 'none', position: 'relative', width: props.width, height: props.height }}>
-    <Suspense fallback={<img src={props.imageUrls[DEFAULT_IMAGE]} style={style} />}>
+    <Suspense fallback={props.imageUrls?.[DEFAULT_IMAGE] ? <img src={props.imageUrls[DEFAULT_IMAGE]} style={style} /> : null}>
       <ShaderImageThree style={style} {...props} />
     </Suspense>
   </div>;

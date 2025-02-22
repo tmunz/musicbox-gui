@@ -1,5 +1,5 @@
 import './BeamMaterial';
-import React, { useImperativeHandle, forwardRef, useRef, useEffect, useState } from 'react';
+import React, { useImperativeHandle, forwardRef, useRef, useState } from 'react';
 import { useTexture } from '@react-three/drei';
 import { AdditiveBlending, DynamicDrawUsage, Group, InstancedMesh, Mesh, Object3DEventMap, Vector3 } from 'three';
 import { Flare } from './Flare';
@@ -13,8 +13,8 @@ export interface BeamSectionApi {
 }
 
 export interface BeamSectionProps extends MeshProps {
-  startRadius?: number;
-  endRadius?: number;
+  startSize?: number;
+  endSize?: number;
   startFade?: number;
   endFade?: number;
   colorRatio?: number;
@@ -22,9 +22,10 @@ export interface BeamSectionProps extends MeshProps {
   enableGlow?: boolean;
   enableFlare?: boolean;
   data?: SampleProvider;
+  dataRatio?: number;
 }
 
-export const BeamSection = forwardRef<BeamSectionApi, BeamSectionProps>(({ startRadius = 0.1, endRadius = 0.1, startFade = 0, endFade = 0, intensity = 1, colorRatio = 1, enableFlare = false, enableGlow = false, ...props }, fref) => {
+export const BeamSection = forwardRef<BeamSectionApi, BeamSectionProps>(({ startSize = 0.025, endSize = 0.025, startFade = 0, endFade = 0, intensity = 1, colorRatio = 1, enableFlare = false, enableGlow = false, ...props }, fref) => {
   const [glowRefTexture] = useTexture([
     require('../assets/lensflare/lensflare0_bw.png')
   ]);
@@ -49,14 +50,14 @@ export const BeamSection = forwardRef<BeamSectionApi, BeamSectionProps>(({ start
   useImperativeHandle(fref, () => ({
     adjustBeam: (start: Vector3, end: Vector3, width: number = 1, orientation: number = 1) => {
       const direction = new Vector3().subVectors(end, start).normalize();
-      const adjustedStart = direction.clone().negate().multiplyScalar(startRadius * width).add(start);
+      const adjustedStart = direction.clone().negate().multiplyScalar(startSize * width).add(start);
       const distance = adjustedStart.distanceTo(end);
       const midPoint = new Vector3().lerpVectors(start, end, 0.5);
       const angle = Math.atan2(direction.y, direction.x);
 
       mainRef.current?.position.copy(midPoint);
-      mainRef.current?.rotation.set(0, 0, angle - Math.PI / 2);
-      mainRef.current?.scale.set(width * orientation, distance, 1);
+      mainRef.current?.rotation.set(0, 0, angle);
+      mainRef.current?.scale.set(distance, width * orientation, 1);
 
       glowRef.current?.position.copy(end);
       glowRef.current?.scale.set(1, 1, 1);
@@ -79,8 +80,8 @@ export const BeamSection = forwardRef<BeamSectionApi, BeamSectionProps>(({ start
         <beamMaterial
           startFade={startFade}
           endFade={endFade}
-          startRadius={startRadius}
-          endRadius={endRadius}
+          startSize={startSize}
+          endSize={endSize}
           colorRatio={colorRatio}
           intensity={intensity}
           toneMapped={false}
@@ -90,13 +91,14 @@ export const BeamSection = forwardRef<BeamSectionApi, BeamSectionProps>(({ start
           sampleData={sampleTexture}
           sampleDataSize={{ x: sampleTexture.image.width, y: sampleTexture.image.height }}
           samplesActive={dataActive ? 1 : 0}
+          sampleRatio={props.dataRatio}
         />
       </mesh>
       {enableGlow && <instancedMesh ref={glowRef} args={[undefined, undefined, 100]} instanceMatrix-usage={DynamicDrawUsage}>
         <planeGeometry />
         <meshBasicMaterial
           map={glowRefTexture}
-          opacity={0.01}
+          opacity={0.005}
           transparent
           blending={AdditiveBlending}
           depthWrite={false}

@@ -11,8 +11,8 @@ extend({
     {
       startFade: 0,
       endFade: 0,
-      startRadius: 0,
-      endRadius: 1,
+      startSize: 0,
+      endSize: 1,
       intensity: 1,
       colorRatio: 1,
       sampleData: null,
@@ -22,13 +22,13 @@ extend({
     },
     ` 
       varying vec2 vUv;
-      varying float vPositionY;
-      varying float vLength;
-
+      varying vec2 vPosition;
+      varying vec2 vSize;
+      
       void main() {
-        vUv = uv;
-        vLength = length(vec3(modelMatrix[1][0], modelMatrix[1][1], modelMatrix[1][2]));
-        vPositionY = (position.y + 0.5) * vLength;
+        vUv = vec2(uv.x, 1.-uv.y);
+        vSize = vec2(length(modelMatrix[0].xyz), length(modelMatrix[1].xyz));
+        vPosition = vec2(position + 0.5) * vSize;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
     `,
@@ -37,62 +37,50 @@ extend({
       precision mediump float;
 
       varying vec2 vUv;
-      varying float vPositionY;
-      varying float vLength;
+      varying vec2 vPosition;
+      varying vec2 vSize;
       uniform float startFade;
       uniform float endFade;
-      uniform float startRadius;
-      uniform float endRadius;
+      uniform float startSize;
+      uniform float endSize;
       uniform float colorRatio;
       uniform float intensity;
       uniform sampler2D sampleData;
       uniform vec2 sampleDataSize;
       uniform int samplesActive;
       uniform float sampleRatio;
-
-      float _saturate (float x) {
-        return min(1.0, max(0.0,x));
-      }
-
-      vec3 _saturate (vec3 x) {
-        return min(vec3(1.,1.,1.), max(vec3(0.,0.,0.),x));
-      }
       
-      vec3 bump3y(vec3 x, vec3 yoffset) {
-        vec3 y = vec3(1.,1.,1.) - x * x;
-        y = _saturate(y-yoffset);
-        return y;
+      vec3 _bump(vec3 x, vec3 y) {
+        return clamp(1. - x*x - y, 0., 1.);
       }
 
-      vec3 spectral_zucconi6(float w, float t) {    
-        float x = _saturate((w - 400.0)/ 300.0);
+      vec3 spectral_zucconi6 (float x) {
         const vec3 c1 = vec3(3.54585104, 2.93225262, 2.41593945);
         const vec3 x1 = vec3(0.69549072, 0.49228336, 0.27699880);
         const vec3 y1 = vec3(0.02312639, 0.15225084, 0.52607955);
         const vec3 c2 = vec3(3.90307140, 3.21182957, 3.96587128);
         const vec3 x2 = vec3(0.11748627, 0.86755042, 0.66077860);
         const vec3 y2 = vec3(0.84897130, 0.88445281, 0.73949448);
-        return bump3y(c1 * (x - x1), y1) + bump3y(c2 * (x - x2), y2);
+        return _bump(c1 * (x - x1), y1) + _bump(c2 * (x - x2), y2) ;
       }
 
       void main() {
-        vec2 uv = vec2(vUv.y, vUv.x - 0.5);
-        float spotX = uv.x * (endRadius - startRadius) + startRadius;
-        float spotFactor = 1. - abs(uv.y) / spotX * 2.;
-        float sampleDataFactor = 1.0;
+        float rangeY = mix(startSize, endSize, vUv.x);
+        vec2 uv = vec2(vUv.x, (vUv.y - .5 + rangeY * .5) / rangeY);
 
-        if (samplesActive == 1) {	
-          sampleDataFactor = texture2D(sampleData, vec2(spotFactor, uv.x)).r; 
+        vec3 spectralColor = spectral_zucconi6(-0.1 + uv.y * 1.2);
+        vec3 color = mix(vec3(1.), spectralColor, colorRatio) * intensity;
+
+        if (samplesActive == 1) {
+          float value = texture(sampleData, uv.yx).r;
+          color *= (1. - sampleRatio) + vec3(value) * sampleRatio;
         }
-        vec3 spectralColor = spectral_zucconi6((uv.y / spotX + .5) * 300. + 400., 0.0); // [400, 700]
-        vec3 whiteColor = vec3(spotFactor);
-        vec3 color = mix(whiteColor, spectralColor, colorRatio);
-        float startFadeFactor = smoothstep(0.0, startFade, vPositionY);
-        float endFadeFactor = 1.0 - smoothstep(vLength - endFade, vLength, vPositionY);
-        float brightness = smoothstep(0., 0.5, color.r + color.g + color.b) * intensity;
-        gl_FragColor = vec4(color * brightness * sampleDataFactor, spotFactor * startFadeFactor * endFadeFactor);
 
-        if (gl_FragColor.a < 0.0001) discard;
+        float colorA = max(dot(color, vec3(1. / 3.)) * 2., 1.);
+        float spotA = smoothstep(.0, .1, uv.y) * (1. - smoothstep(0.9, 1., uv.y));
+        float startFadeA = smoothstep(0., startFade, vPosition.x);
+        float endFadeA = 1. - smoothstep(vSize.x - endFade, vSize.x, vPosition.x);
+        gl_FragColor = vec4(color, spotA * startFadeA * endFadeA);
       }
     `
   )
@@ -101,13 +89,14 @@ extend({
 export interface BeamMaterial {
   startFade: number;
   endFade: number;
-  startRadius: number;
-  endRadius: number;
+  startSize: number;
+  endSize: number;
   colorRatio: number;
   intensity: number;
   sampleData?: DataTexture,
   sampleDataSize?: { x: number, y: number },
   samplesActive?: number;
+  sampleRatio?: number;
 }
 
 declare global {

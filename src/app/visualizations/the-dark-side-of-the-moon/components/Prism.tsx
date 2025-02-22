@@ -23,11 +23,11 @@ export const Prism = forwardRef<Mesh, GroupProps>((props, ref) => {
       >
         <MeshTransmissionMaterial
           clearcoat={1}
-          transmission={0.8}
-          thickness={10}
-          roughness={0.05}
+          transmission={0.9}
+          thickness={4}
+          roughness={0.07}
           anisotropy={0.1}
-          chromaticAberration={0.5}
+          chromaticAberration={0.4}
           toneMapped={false}
         />
       </mesh>
