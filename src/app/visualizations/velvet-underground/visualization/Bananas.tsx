@@ -49,7 +49,7 @@ const Scene = ({ sampleProvider, bananaPeeled = false }: { sampleProvider?: Samp
   useFrame(() => {
     if (sampleProvider?.active && bananaRef.current) {
       const avg = sampleProvider.getAvg()[0];
-      bananaRef.current.position.set(0, -avg / 255 * 0.1, 0); // TODO improve dummy visualisation
+      bananaRef.current.position.set(0, (-1 + avg / 255) * 0.1, 0); // TODO improve dummy visualisation
     }
   });
 

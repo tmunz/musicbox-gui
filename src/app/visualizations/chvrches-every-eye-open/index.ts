@@ -26,6 +26,18 @@ const chvrchesEveryEyeOpen: Visualization = {
           max: 1,
           step: 0.1
         }
+      },
+      backgroundImage: {
+        id: 'backgroundImage',
+        name: 'background image',
+        description: 'Visibility of the background image',
+        type: SettingType.NUMBER,
+        value: 0,
+        params: {
+          min: 0,
+          max: 1,
+          step: 0.1
+        }
       }
     }
   }

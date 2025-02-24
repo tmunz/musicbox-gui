@@ -2,23 +2,27 @@ import { useEffect, useState } from 'react';
 import { SampleProvider } from './SampleProvider';
 import { DataTexture, RedFormat, UnsignedByteType } from 'three';
 
-export const useSampleProviderTexture = (sampleProvider?: SampleProvider): [DataTexture, () => void] => {
+export const useSampleProviderTexture = (
+  sampleProvider?: SampleProvider,
+  getData: (sampleProvider?: SampleProvider) => Uint8Array = (sp) => sp?.flat() ?? new Uint8Array(),
+  getWidth: (sampleProvider?: SampleProvider) => number = (sp) => sp?.frequencyBands ?? 0,
+  getHeight: (sampleProvider?: SampleProvider) => number = (sp) => sp?.sampleSize ?? 0,
+): [DataTexture, () => void] => {
   const [sampleTexture, setSampleTexture] = useState<DataTexture>(new DataTexture(new Uint8Array(1), 1, 1, RedFormat, UnsignedByteType));
 
   useEffect(() => {
-    if (sampleProvider && (sampleProvider.frequencyBands !== sampleTexture.image.width
-      || sampleProvider.sampleSize !== sampleTexture.image.height)) {
-      setSampleTexture(new DataTexture(sampleProvider.flat(), sampleProvider.frequencyBands, sampleProvider.sampleSize, RedFormat, UnsignedByteType));
+    const width = getWidth(sampleProvider);
+    const height = getHeight(sampleProvider);
+    if (sampleProvider && (width !== sampleTexture.image.width || height !== sampleTexture.image.height)) {
+      setSampleTexture(new DataTexture(getData(sampleProvider), width, height, RedFormat, UnsignedByteType));
     }
   }, [sampleProvider?.frequencyBands, sampleProvider?.sampleSize]);
 
   const applyToSampleTexture = () => {
     if (!sampleProvider) return;
-    Object.assign(sampleTexture.image, {
-      data: sampleProvider.flat(),
-      width: sampleProvider.frequencyBands,
-      height: sampleProvider.sampleSize,
-    });
+    const width = getWidth(sampleProvider);
+    const height = getHeight(sampleProvider);
+    Object.assign(sampleTexture.image, { data: getData(sampleProvider), width, height });
     sampleTexture.needsUpdate = true;
   }
 

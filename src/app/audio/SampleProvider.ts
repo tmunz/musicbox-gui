@@ -22,6 +22,10 @@ export class SampleProvider extends FixedSizeQueue<Uint8Array> {
     return this.size;
   }
 
+  get samples() {
+    return this.queue;
+  }
+
   push = (sample?: Uint8Array) => {
     if (sample === undefined) {
       this._active = false;
@@ -46,18 +50,18 @@ export class SampleProvider extends FixedSizeQueue<Uint8Array> {
 
   getMax = (): { max: number; sampleIndex: number }[] => {
     if (this.queue.length === 0 || this.queue[0].length === 0) return [];
-  
+
     return new Array(this.frequencyBands).fill(0).map((_, index: number) => {
       let max = 0;
       let sampleIndex = 0;
-  
+
       this.queue.forEach((sample, i) => {
         if (sample[index] > max) {
           max = sample[index];
           sampleIndex = i;
         }
       });
-  
+
       return { max, sampleIndex };
     });
   };

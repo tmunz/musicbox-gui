@@ -107,7 +107,7 @@ export const Beam = forwardRef<BeamApi, BeamProps>(({ maxBounces = 10, deflectio
         } else if (i !== maxBounces) {
           beamSectionProps = { intensity: 1.4, startSize: 0.1, endSize: 0.6, startFade: 0.3, endFade: 7, colorRatio: 0.2 };
         } else {
-          beamSectionProps = { intensity: 1.2, startSize: 0.3, endSize: 1, startFade: 2, endFade: 8, colorRatio: 1, data, dataRatio };
+          beamSectionProps = { intensity: 1.4, startSize: 0.3, endSize: 1, startFade: 2, endFade: 8, colorRatio: 1, data, dataRatio };
         }
         return <BeamSection
           key={i}

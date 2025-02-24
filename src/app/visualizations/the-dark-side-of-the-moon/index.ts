@@ -13,14 +13,14 @@ const theDarkSideOfTheMoon: Visualization = {
   component: TheDarkSideOfTheMoon,
   color: '#060606',
   settings: {
-    samples: createSampleSettings(36, 42),
+    samples: createSampleSettings(36, 32),
     visualization: {
       volumeAmountIndicator: {
         id: 'volumeAmountIndicator',
         name: 'volume indicator',
         description: 'The maximum relative length change of the volume indicator.',
         type: SettingType.NUMBER,
-        value: 0.4,
+        value: 0.6,
         params: {
           min: 0,
           max: 1,

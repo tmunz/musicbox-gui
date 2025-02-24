@@ -1,5 +1,4 @@
 import { createSampleSettings } from '../../audio/SampleSettings';
-import { SettingType } from '../../settings/Setting';
 import { Visualization } from '../Visualization';
 import { UnknownPleasures } from './visualization/UnknownPleasures';
 
@@ -13,21 +12,7 @@ const unknownPleasures: Visualization = {
   component: UnknownPleasures,
   color: '#000000',
   settings: {
-    samples: createSampleSettings(64, 16),
-    visualization: {
-      noise: {
-        id: 'noise',
-        name: 'Noise',
-        description: 'The level of noise introduced to the waveform to mimic the warmth and imperfections of analog signals.',
-        type: SettingType.NUMBER,
-        value: 0.1,
-        params: {
-          min: 0,
-          max: 1,
-          step: 0.01
-        }
-      }
-    }
+    samples: createSampleSettings(80, 32),
   }
 };
 
