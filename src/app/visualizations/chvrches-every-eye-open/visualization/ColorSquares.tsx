@@ -87,9 +87,9 @@ export const ColorSquares = ({ sampleProvider, size, visibilityThreshold, backgr
             vec4 overlayColor = texture2D(image, dUv);
             color = mix(color, overlayColor, overlayColor.a);
           } else if (value.s >= max(max(topValue, rightValue), max(bottomValue, leftValue))) {
-            vec3 baseColor = texture2D(colorMap, floor(uv / texel) * texel  + (.5 * texel)).rgb;
-            float a = value.s >= visibilityThreshold ? value.t + 0.2 : 0.;
-            color = vec4(baseColor, a);
+            vec4 baseColor = texture2D(colorMap, floor(uv / texel) * texel  + (.5 * texel));
+            baseColor.a = value.s >= visibilityThreshold ? value.t + 0.2 : 0.;
+            color = mix(baseColor, color, clamp(backgroundImage - baseColor.a, 0., 1.));
           }
         }
         

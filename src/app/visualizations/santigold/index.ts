@@ -12,7 +12,7 @@ const santigold: Visualization = {
   component: Santigold,
   color: '#dfe0f3',
   settings: {
-    samples: createSampleSettings(),
+    samples: createSampleSettings(32, 32),
   }
 };
 

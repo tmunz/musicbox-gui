@@ -12,7 +12,7 @@ const vivaLaVida: Visualization = {
   component: VivaLaVida,
   color: '#342b1c',
   settings: {
-    samples: createSampleSettings(),
+    samples: createSampleSettings(32, 32),
   }
 };
 

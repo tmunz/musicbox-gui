@@ -1,26 +1,34 @@
 import React, { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Points } from 'three';
+import { SampleProvider } from '../../../audio/SampleProvider';
 
-export const GlitterParticles = () => {
-  const pointsRef = useRef<Points>(null!);
-  
+export interface GlitterParticlesProps {
+  sampleProvider: SampleProvider;
+}
+
+export const GlitterParticles = ({ sampleProvider }: GlitterParticlesProps) => {
+  const pointsRef = useRef<Points | null>(null);
+
   const particles = useMemo(() => {
-    const count = 500;
-    const positions = new Float32Array(count * 3);
-    
-    for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 5;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 5;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 5;
-    }
-    return positions;
-  }, []);
+    return new Float32Array(sampleProvider.sampleSize * sampleProvider.frequencyBands * 3);
+  }, [sampleProvider.sampleSize, sampleProvider.frequencyBands]);
 
-  useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
+  useFrame(() => {
     if (pointsRef.current) {
-      pointsRef.current.rotation.y = t * 0.1;
+      const positions = pointsRef.current.geometry.attributes.position.array as Float32Array;
+
+      for (let i = 0; i < sampleProvider.sampleSize; i++) {
+        for (let j = 0; j < sampleProvider.frequencyBands; j++) {
+          const sampleValue = sampleProvider.get(i)[j] / 255;
+          const x = i / sampleProvider.sampleSize * 2 - 1 + sampleValue;
+          const y = j / sampleProvider.frequencyBands * 2 - 1;
+          const index = (i * sampleProvider.frequencyBands + j) * 3;
+          positions[index] = x * 2;
+          positions[index + 1] = y * 2;
+        }
+      }
+      pointsRef.current.geometry.attributes.position.needsUpdate = true;
     }
   });
 
@@ -28,13 +36,13 @@ export const GlitterParticles = () => {
     <points ref={pointsRef}>
       <bufferGeometry>
         <bufferAttribute
-          attach='attributes-position'
+          attach="attributes-position"
           array={particles}
           count={particles.length / 3}
           itemSize={3}
         />
       </bufferGeometry>
-      <pointsMaterial size={0.05} color='gold' />
+      <pointsMaterial size={0.05} color="gold" />
     </points>
   );
 };

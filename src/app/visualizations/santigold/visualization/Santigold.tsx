@@ -13,7 +13,7 @@ export const Santigold = ({ sampleProvider, canvas }: SantigoldProps) => {
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
       <img src={require('./santigold_plain.jpg')} alt="Santigold" style={{ height: '100%' }} />
       <Canvas style={{ position: 'absolute', width: canvas.width, height: canvas.height, top: 0, left: 0 }}>
-        <GlitterParticles/>
+        <GlitterParticles sampleProvider={sampleProvider} />
       </Canvas>
     </div>
   );
