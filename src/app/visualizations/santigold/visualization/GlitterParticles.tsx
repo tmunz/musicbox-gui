@@ -1,22 +1,30 @@
 import React, { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Points } from 'three';
+import { Points, Texture } from 'three';
 import { SampleProvider } from '../../../audio/SampleProvider';
-import { Box, useMatcapTexture } from '@react-three/drei';
+import { useTexture } from '@react-three/drei';
+import './GlitterMaterial';
 
 export interface GlitterParticlesProps {
   sampleProvider: SampleProvider;
   count?: number;
+  textureScale?: number;
 }
 
-export const GlitterParticles = ({ sampleProvider, count = 3 }: GlitterParticlesProps) => {
+export const GlitterParticles = ({ sampleProvider, count = 3, textureScale = 10 }: GlitterParticlesProps) => {
   const pointsRef = useRef<Points | null>(null);
-  const { current: glitterTexture } = useRef(useMatcapTexture("422509_C89536_824512_0A0604"));
+  const { current: glitterTexture } = useRef<Texture>(useTexture(require('./assets/gold-glitter-texture-seamless.jpg')) as unknown as Texture);
 
   const particles = useMemo(() => {
-    return new Float32Array(sampleProvider.sampleSize * sampleProvider.frequencyBands * count * 3);
-  }, [sampleProvider.sampleSize, sampleProvider.frequencyBands]);
-
+    const particleCount = sampleProvider.sampleSize * sampleProvider.frequencyBands * count;
+    const positions = new Float32Array(particleCount * 3);
+    const textureOffsets = new Float32Array(particleCount * 2);
+    for (let i = 0; i < particleCount; i++) {
+      textureOffsets[i * 2] = Math.random();
+      textureOffsets[i * 2 + 1] = Math.random();
+    }
+    return { positions, textureOffsets };
+  }, [sampleProvider.sampleSize, sampleProvider.frequencyBands, textureScale]);
 
   // [0, 1]
   const shapeFactor = (x: number, y: number, k: number): number[] => {
@@ -55,25 +63,30 @@ export const GlitterParticles = ({ sampleProvider, count = 3 }: GlitterParticles
     }
   });
 
+  console.log(glitterTexture);
+
   return (
     <points ref={pointsRef}>
-      <bufferGeometry>
+      <bufferGeometry >
         <bufferAttribute
-          key={particles.length}
-          attach="attributes-position"
-          array={particles}
-          count={particles.length / 3}
+          key={'position-' + particles.positions.length}
+          attach='attributes-position'
+          array={particles.positions}
+          count={particles.positions.length / 3}
           itemSize={3}
         />
+        <bufferAttribute
+          key={'textureOffset-' + particles.textureOffsets.length}
+          attach='attributes-textureOffset'
+          array={particles.textureOffsets}
+          count={particles.textureOffsets.length / 2}
+          itemSize={2}
+        />
       </bufferGeometry>
-      <pointsMaterial
+      <glitterMaterial
+        textureImage={glitterTexture}
+        textureScale={0.005}
         size={1}
-        // transparent={true}
-        // depthWrite={true}
-        alphaMap={glitterTexture[0]}
-        alphaTest={0.5}
-        color="gold"
-        map={glitterTexture[0]}
       />
     </points>
   );
