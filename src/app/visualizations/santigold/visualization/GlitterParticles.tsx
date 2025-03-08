@@ -63,8 +63,6 @@ export const GlitterParticles = ({ sampleProvider, count = 3, textureScale = 10 
     }
   });
 
-  console.log(glitterTexture);
-
   return (
     <points ref={pointsRef}>
       <bufferGeometry >
