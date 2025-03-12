@@ -15,7 +15,7 @@ export const Santigold = ({ sampleProvider, canvas }: SantigoldProps) => {
       <img src={require('./santigold_plain.jpg')} alt="Santigold" style={{ height: '100%' }} />
       <Canvas style={{ position: 'absolute', width: canvas.width, height: canvas.height, top: 0, left: 0 }}>
         <orthographicCamera position={[0, 0, 10]} zoom={1} />
-        <OrbitControls enabled={true} />
+        <OrbitControls enabled={false} />
         <GlitterParticles sampleProvider={sampleProvider} />
       </Canvas>
     </div>
