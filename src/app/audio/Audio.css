@@ -1,0 +1,30 @@
+.audio {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+
+  .url-stream {
+    display: flex;
+    flex-direction: row;
+    .input-wrapper {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      padding: 0.5em 1em;
+      background-color: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+
+      input {
+        background-color: transparent;
+        color: white;
+        border: none;
+        font-size: 1.2em;
+        padding: 0 0.5em;
+        border-radius: 0;
+        &:focus {
+          outline: none;
+        }
+      }
+    }
+  }
+}

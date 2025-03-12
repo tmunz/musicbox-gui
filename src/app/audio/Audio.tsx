@@ -1,16 +1,20 @@
-import React from 'react';
+import './Audio.css';
+import React, { useState } from 'react';
 import { useAudio } from './useAudio';
-import { AudioControls } from './AudioControls';
 import { MediaStreamType } from './MediaStreamType';
+import { IconButton } from '../ui/IconButton';
+import { PiPlay, PiPlayFill, PiRecordDuotone, PiRecordFill, PiStop } from 'react-icons/pi';
 
 interface AudioProviderProps {
   onChange: (stream: Promise<MediaStream | null>) => void;
 }
 
 export const Audio = ({ onChange }: AudioProviderProps) => {
-  const [audioPlayer, setAudioPlayer] = React.useState<HTMLAudioElement | null>(null);
-  const [currentStream, setCurrentStream] = React.useState<{ stream: MediaStream, type: MediaStreamType } | null>(null);
-  const [error, setError] = React.useState<string | null>(null);
+  const [audioPlayer, setAudioPlayer] = useState<HTMLAudioElement | null>(null);
+  const [currentStream, setCurrentStream] = useState<{ stream: MediaStream, type: MediaStreamType } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [url, setUrl] = useState<string>('https://rautemusik.stream25.radiohost.de/rm-80s_mp3-192');
+
 
   const activateMicrophone = async () => {
     stop();
@@ -24,7 +28,7 @@ export const Audio = ({ onChange }: AudioProviderProps) => {
     }
   };
 
-  const activateUrlStream = async (url: string = 'https://rautemusik.stream25.radiohost.de/rm-80s_mp3-192') => {
+  const activateUrlStream = async () => {
     stop();
     try {
       const { stream, audio } = await useAudio(url);
@@ -52,9 +56,26 @@ export const Audio = ({ onChange }: AudioProviderProps) => {
     }
   };
 
+  const size = 36;
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <AudioControls onRecord={activateMicrophone} onPlay={activateUrlStream} onStop={stop} mediaStreamType={currentStream?.type ?? null} />
+    <div className='audio'>
+      <IconButton onClick={stop} title='Stop' disabled={!currentStream}>
+        <PiStop size={size} />
+      </IconButton>
+
+      <IconButton onClick={activateMicrophone} title='Record' disabled={currentStream?.type === MediaStreamType.MICROPHONE}>
+        {currentStream?.type === MediaStreamType.MICROPHONE ? <PiRecordFill size={size} style={{ color: 'red' }} /> : <PiRecordDuotone size={size} />}
+      </IconButton>
+
+      <div className='url-stream'>
+        <IconButton onClick={activateUrlStream} title='Play' disabled={currentStream?.type === MediaStreamType.URI}>
+          {currentStream?.type === MediaStreamType.URI ? <PiPlayFill size={size} style={{ color: 'red' }} /> : <PiPlay size={size} />}
+        </IconButton>
+        <div className='input-wrapper'>
+          <input value={url} onChange={(e) => setUrl(e.target.value)} />
+        </div>
+      </div>
     </div>
   );
 };

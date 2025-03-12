@@ -9,9 +9,12 @@ import vivaLaVida from "./viva-la-vida";
 export default [unknownPleasures, theDarkSideOfTheMoon, chvrchesEveryEyeOpen, karpatenhund, velvetUnderground, vivaLaVida, santigold];
 
 // Mike Oldfield - Crises
+// Nick Cave - Push the Sky Away
+// Kraftwerk
+// The Sounds
 // A-ha - Minor Earth Major Sky
 // Depeche Mode - Violator
-// Kraftwerk
+
 // Green Day - American Idiot
 // Yeah Yeah Yeahs - It's Blitz!
 // Led Zeppelin - Led Zeppelin

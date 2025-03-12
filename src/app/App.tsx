@@ -69,16 +69,16 @@ export function App() {
         defaultFocus
       />
       <Menubar hideTimeout={3000}>
-        <MenubarItem icon={PiInfo}>
-          <VisualizationInfo visualization={appState.visualization} />
-        </MenubarItem>
-        <MenubarItem icon={PiSlidersHorizontalDuotone}>
-          <SettingsComponent />
-        </MenubarItem>
         <SampleProviderComponent
           onSampleProviderChange={setSampleProvider}
           {...Object.fromEntries(Object.entries(appState.visualization?.settings?.samples || {}).map(([key, setting]) => [key, setting.value]))}
         />
+        <MenubarItem icon={PiSlidersHorizontalDuotone}>
+          <SettingsComponent />
+        </MenubarItem>
+        <MenubarItem icon={PiInfo}>
+          <VisualizationInfo visualization={appState.visualization} />
+        </MenubarItem>
       </Menubar>
     </div>
   );
