@@ -5,11 +5,21 @@ import santigold from "./santigold";
 import unknownPleasures from "./unknown-pleasures";
 import velvetUnderground from "./velvet-underground";
 import vivaLaVida from "./viva-la-vida";
+import crises from "./crises";
+import pushTheSkyAway from "./push-the-sky-away";
 
-export default [unknownPleasures, theDarkSideOfTheMoon, chvrchesEveryEyeOpen, karpatenhund, velvetUnderground, vivaLaVida, santigold];
+export default [
+  unknownPleasures,
+  santigold,
+  theDarkSideOfTheMoon,
+  chvrchesEveryEyeOpen,
+  karpatenhund,
+  crises,
+  pushTheSkyAway,
+  vivaLaVida,
+  velvetUnderground
+];
 
-// Mike Oldfield - Crises
-// Nick Cave - Push the Sky Away
 // Kraftwerk
 // The Sounds
 // A-ha - Minor Earth Major Sky

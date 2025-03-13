@@ -1,5 +1,5 @@
 import React, { useRef, useMemo, useEffect, useState, CSSProperties } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, RootState, useFrame, useThree } from '@react-three/fiber';
 import { OrthographicCamera } from '@react-three/drei';
 import { IUniform, Mesh, NearestFilter, ShaderMaterial, Texture, TextureLoader } from 'three';
 
@@ -14,7 +14,8 @@ export const DEFAULT_FRAGMENT_SHADER = `
 
   void main() {
     gl_FragColor = texture2D(image, vUv);
-  }`;
+  }
+`;
 
 const DEFAULT_VERTEX_SHADER = `
   varying vec2 vUv; 
@@ -30,7 +31,7 @@ export interface ShaderImageThreeProps {
   objectFit?: ObjectFit;
   vertexShader?: string;
   fragmentShader?: string;
-  getUniforms?: () => Record<string, IUniform>;
+  getUniforms?: (rootState: RootState) => Record<string, IUniform>;
   style?: CSSProperties;
 }
 
@@ -70,7 +71,7 @@ export const ShaderImageThreePlane = ({
   const ref = useRef<Mesh>(null);
   const materialRef = useRef<ShaderMaterial>(null);
   const [textures, setTextures] = useState<Record<string, { loaded: boolean, url: string, data?: Texture }>>({});
-  const { size } = useThree();
+  const rootState = useThree();
 
   useEffect(() => {
     Object.entries(imageUrls).forEach(([id, url]) => {
@@ -101,7 +102,7 @@ export const ShaderImageThreePlane = ({
         return agg;
       }
     }, {});
-    return { ...getUniforms(), ...imageUniforms, };
+    return { ...getUniforms(rootState), ...imageUniforms, };
   }
 
   const shaderMaterial = useMemo(() => {
@@ -118,13 +119,13 @@ export const ShaderImageThreePlane = ({
     if (ref.current) {
       if (mainTexture?.loaded) {
         const texture = mainTexture.data?.image;
-        const scale = getScale(texture, size, objectFit);
+        const scale = getScale(texture, rootState.size, objectFit);
         ref.current.scale.set(texture.width * scale.x, texture.height * scale.y, 1);
       } else {
-        ref.current.scale.set(size.width, size.height, 1);
+        ref.current.scale.set(rootState.size.width, rootState.size.height, 1);
       }
     }
-  }, [size, textures, ref.current, objectFit]);
+  }, [rootState.size, textures, ref.current, objectFit]);
 
   useFrame(() => {
     const material = materialRef.current;

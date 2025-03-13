@@ -51,7 +51,7 @@ export const GlitterParticles = ({ sampleProvider, count = 50, textureScale = 0.
             const index = ((j * sampleProvider.frequencyBands * count) + (i * count) + k) * 3;
             const [x, y, z] = shapeFactor(a, b, c, index);
             positions[index] = (x + (a - 0.5) * sampleValue * 0.2);
-            positions[index + 1] = y - (1 - b) * sampleValue * 3;
+            positions[index + 1] = y - (1.05 - b) * sampleValue * 3;
             positions[index + 2] = (1 - b) * (z + (c - 0.5) * sampleValue);
           }
         }

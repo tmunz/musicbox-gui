@@ -2,7 +2,7 @@ import { createSampleSettings } from "../../audio/SampleSettings";
 import { Visualization } from "../Visualization";
 import { Karpatenhund } from "./visualization/Karpatenhund";
 
-const unknownPleasures: Visualization = {
+const karpatenhund: Visualization = {
   id: 'karpatenhund-3',
   title: '#3',
   artist: 'Karpatenhund',
@@ -16,4 +16,4 @@ const unknownPleasures: Visualization = {
   }
 };
 
-export default unknownPleasures;
+export default karpatenhund;
