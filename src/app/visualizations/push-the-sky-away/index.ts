@@ -12,7 +12,7 @@ const pushTheSkyAway: Visualization = {
   component: PushTheSkyAway,
   color: '#cccccc',
   settings: {
-    samples: createSampleSettings(32, 32),
+    samples: createSampleSettings(32, 16),
   }
 };
 

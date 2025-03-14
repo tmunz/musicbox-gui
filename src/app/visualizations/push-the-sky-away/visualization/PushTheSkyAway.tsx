@@ -8,7 +8,7 @@ export interface PushTheSkyAwayProps {
 }
 
 export const PushTheSkyAway = ({ sampleProvider, canvas }: PushTheSkyAwayProps) => {
-  const sizeRatio = 0.9;
+  const sizeRatio = 0.8;
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
       <Bedroom width={canvas.width * sizeRatio} height={canvas.height * sizeRatio} sampleProvider={sampleProvider} />

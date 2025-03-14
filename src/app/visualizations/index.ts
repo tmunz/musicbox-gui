@@ -7,6 +7,7 @@ import velvetUnderground from "./velvet-underground";
 import vivaLaVida from "./viva-la-vida";
 import crises from "./crises";
 import pushTheSkyAway from "./push-the-sky-away";
+import minorEarthMajorSky from "./minor-earth-major-sky";
 
 export default [
   unknownPleasures,
@@ -16,15 +17,16 @@ export default [
   karpatenhund,
   crises,
   pushTheSkyAway,
+  minorEarthMajorSky,
   vivaLaVida,
-  velvetUnderground
+  velvetUnderground,
 ];
 
 // Kraftwerk
 // The Sounds
-// A-ha - Minor Earth Major Sky
 // Depeche Mode - Violator
 
+// Blondie - Parallel Lines
 // Green Day - American Idiot
 // Yeah Yeah Yeahs - It's Blitz!
 // Led Zeppelin - Led Zeppelin

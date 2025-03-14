@@ -6,7 +6,7 @@
   height: 100%;
   display: flex;
   justify-content: start;
-  justify-items: end;
+  justify-items: start;
   align-items: end;
   color: white;
   transition: transform 0.5s ease, opacity 0.5s ease;
@@ -28,10 +28,10 @@
   &>* {
     pointer-events: all;
     max-width: 100%;
-    /* min-width: 0; */
 
-    &:first-child {
-      margin-right: auto;
+    &:last-child {
+      margin-left: auto;
+      min-width: 0;
     }
   }
 }

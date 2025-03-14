@@ -48,6 +48,7 @@ export class SampleProvider extends FixedSizeQueue<Uint8Array> {
     });
   }
 
+  // Returns the max value and the index of the sample that contains it for each frequency band (sorted by frequencies from low to high)
   getMax = (): { max: number; sampleIndex: number }[] => {
     if (this.queue.length === 0 || this.queue[0].length === 0) return [];
 

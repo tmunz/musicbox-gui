@@ -69,12 +69,12 @@ export const Audio = ({ onChange }: AudioProviderProps) => {
       </IconButton>
 
       <div className='url-stream'>
-        <IconButton onClick={activateUrlStream} title='Play' disabled={currentStream?.type === MediaStreamType.URI}>
-          {currentStream?.type === MediaStreamType.URI ? <PiPlayFill size={size} style={{ color: 'red' }} /> : <PiPlay size={size} />}
-        </IconButton>
         <div className='input-wrapper'>
           <input value={url} onChange={(e) => setUrl(e.target.value)} />
         </div>
+        <IconButton onClick={activateUrlStream} title='Play' disabled={currentStream?.type === MediaStreamType.URI}>
+          {currentStream?.type === MediaStreamType.URI ? <PiPlayFill size={size} style={{ color: 'red' }} /> : <PiPlay size={size} />}
+        </IconButton>
       </div>
     </div>
   );

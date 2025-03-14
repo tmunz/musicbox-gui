@@ -1,7 +1,7 @@
 import React, { useRef, useMemo, useEffect, useState, CSSProperties } from 'react';
 import { Canvas, RootState, useFrame, useThree } from '@react-three/fiber';
 import { OrthographicCamera } from '@react-three/drei';
-import { IUniform, Mesh, NearestFilter, ShaderMaterial, Texture, TextureLoader } from 'three';
+import { IUniform, Mesh, NearestFilter, LinearFilter, Texture, TextureLoader, ShaderMaterial } from 'three';
 
 export type ObjectFit = 'contain' | 'cover' | 'fill';
 
@@ -33,6 +33,7 @@ export interface ShaderImageThreeProps {
   fragmentShader?: string;
   getUniforms?: (rootState: RootState) => Record<string, IUniform>;
   style?: CSSProperties;
+  imageFilter?: typeof NearestFilter | typeof LinearFilter;
 }
 
 export function getScale(
@@ -66,6 +67,7 @@ export const ShaderImageThreePlane = ({
   fragmentShader = DEFAULT_FRAGMENT_SHADER,
   objectFit = 'cover',
   getUniforms = () => ({}),
+  imageFilter = NearestFilter,
 }: ShaderImageThreeProps) => {
 
   const ref = useRef<Mesh>(null);
@@ -95,8 +97,8 @@ export const ShaderImageThreePlane = ({
     const imageUniforms = Object.keys(imageUrls).reduce((agg, id) => {
       const texture = textures[id];
       if (texture?.loaded && texture.data) {
-        texture.data.magFilter = NearestFilter;
-        texture.data.minFilter = NearestFilter;
+        texture.data.magFilter = imageFilter;
+        texture.data.minFilter = imageFilter;
         return { ...agg, [id]: { value: texture.data } };
       } else {
         return agg;

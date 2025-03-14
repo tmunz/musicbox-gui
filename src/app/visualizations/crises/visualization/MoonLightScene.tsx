@@ -90,26 +90,3 @@ export const MoonLightScene = ({ width, height, sampleProvider }: MoonLightScene
     `}
   />;
 }
-
-// void main() {
-//   vec2 uv = vUv;
-//   float a = 0.;
-//   float yu = .2;
-//   float yl = .06;
-//   float h = yu - yl;
-//   float lines = sampleDataSize.x;
-//   float distance = h / (lines - 1.);
-
-//   for (float i = 1.; i <= lines; i++) {
-//     float currLine = lines - i; // from top to bottom
-//     float value = _value(vec2(currLine/lines, uv.x)) * (1. - h) * 0.01;
-//     float d = uv.y - value - currLine * distance - yl;
-//     float strokeWidth = (1. - uv.y / (h + .1)) / vSize.y * 10.;
-//     a += min(1. - smoothstep(strokeWidth * .5, strokeWidth, d), 1.); // upper line edge
-//     a *= smoothstep(0., strokeWidth * .5, d); // lower line edge and mask
-//   }
-//   vec4 imageColor = texture(image, uv);
-//   vec4 waterBaseColor = texture(waterImage, vec2(uv.x, uv.y / h - .5));
-//   vec4 waterColor = mix(waterBaseColor, mix(vec4(.376, .749, .557, 1.), vec4(.851, .894, .729, 1.), a), .0);
-//   gl_FragColor = mix(waterColor, imageColor, imageColor.a); 
-// }

@@ -2,6 +2,7 @@ import React, { useRef } from 'react'
 import { ShaderImage } from '../../../ui/shader-image/ShaderImage';
 import { SampleProvider } from '../../../audio/SampleProvider';
 import { useSampleProviderTexture } from '../../../audio/useSampleProviderTexture';
+import { gaussianBlur } from '../../../utils/ShaderUtils';
 
 export interface CatProps {
   width: number;
@@ -44,21 +45,7 @@ export const Cat = ({ width, height, sampleProvider }: CatProps) => {
       uniform int samplesActive;
       in vec2 vUv;
 
-      vec4 _gaussianBlur(sampler2D img, vec2 uv, float blurSize, int kernelSize, vec2 resolution) {
-        vec4 color = vec4(0.0);
-        int halfKernelSize = kernelSize / 2;
-        float sigma = float(kernelSize) / 2.0;
-        float weightSum = 0.0;
-        for (int x = -halfKernelSize; x <= halfKernelSize; x++) {
-          for (int y = -halfKernelSize; y <= halfKernelSize; y++) {
-            vec2 offset = vec2(x, y) * blurSize / resolution;
-            float weight = exp(-(float(x * x + y * y) / (2.0 * sigma * sigma))); 
-            color += texture2D(img, uv + offset) * weight;
-            weightSum += weight;
-          }
-        }
-        return color / weightSum;  
-      }
+      ${gaussianBlur}
 
       float _shapeFactor (float x) {
         return 0.9 * (cos(12. * x) / 3.0 + .5) * (1. - x / 2.) + 0.1;
@@ -81,7 +68,7 @@ export const Cat = ({ width, height, sampleProvider }: CatProps) => {
             float dateWidth = dataX1 - dataX0;
             float dataHeight = dataY1 - dataY0;
             vec2 correctedUv = (uv - vec2(dataX0, dataY0)) / vec2(dateWidth, dataHeight);
-            vec4 sampleColor = _gaussianBlur(sampleData, correctedUv, 1. / sampleDataSize.x, 25, sampleDataSize);
+            vec4 sampleColor = gaussianBlur(sampleData, correctedUv, 1. / sampleDataSize.x, 25, sampleDataSize);
             float factor = dataHeight;
             uv.y -= sampleColor.r * factor * _shapeFactor(uv.x) * correctedUv.y;
             // sampleColor.rgb = vec3(sampleColor.r);
