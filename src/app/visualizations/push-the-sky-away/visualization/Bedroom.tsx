@@ -27,7 +27,7 @@ export const Bedroom = ({ sampleProvider, width, height, positionEffect = 0.08 }
     updateSampleTexture();
   
     return {
-      position: { value: [rootState.pointer.x, rootState.pointer.y] },
+      position: { value: [rootState.pointer.x ?? 0, rootState.pointer.y ?? 0] },
       positionEffect: { value: [positionEffect, positionEffect] },
       sampleData: { value: sampleTexture },
       sampleDataSize: { value: { x: sampleTexture.image.width, y: sampleTexture.image.height } },
