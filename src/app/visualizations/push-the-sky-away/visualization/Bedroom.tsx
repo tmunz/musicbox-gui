@@ -11,10 +11,10 @@ export interface BedroomProps {
   width: number;
   height: number;
   sampleProvider: SampleProvider;
-  positionEffect?: number;
+  perspectiveEffect?: number;
 }
 
-export const Bedroom = ({ sampleProvider, width, height, positionEffect = 0.08 }: BedroomProps) => {
+export const Bedroom = ({ sampleProvider, width, height, perspectiveEffect = 0.08 }: BedroomProps) => {
 
   const [sampleTexture, updateSampleTexture] = useSampleProviderTexture(sampleProvider, convertLightData);
 
@@ -27,8 +27,8 @@ export const Bedroom = ({ sampleProvider, width, height, positionEffect = 0.08 }
     updateSampleTexture();
   
     return {
-      position: { value: [rootState.pointer.x ?? 0, rootState.pointer.y ?? 0] },
-      positionEffect: { value: [positionEffect, positionEffect] },
+      perspective: { value: [rootState.pointer.x ?? 0, rootState.pointer.y ?? 0] },
+      perspectiveEffect: { value: [perspectiveEffect, perspectiveEffect] },
       sampleData: { value: sampleTexture },
       sampleDataSize: { value: { x: sampleTexture.image.width, y: sampleTexture.image.height } },
     }
@@ -49,8 +49,8 @@ export const Bedroom = ({ sampleProvider, width, height, positionEffect = 0.08 }
       uniform sampler2D sampleData;
       uniform vec2 sampleDataSize;
       uniform sampler2D depthMap;
-      uniform vec2 position;
-      uniform vec2 positionEffect;
+      uniform vec2 perspective;
+      uniform vec2 perspectiveEffect;
 
       ${gaussianBlur}
 
@@ -77,8 +77,8 @@ export const Bedroom = ({ sampleProvider, width, height, positionEffect = 0.08 }
 
         float depth = texture2D(depthMap, uv).r;
         // float zoomValue = -(1. + zoom) * zoomEffect * 0.1; // (uv - 0.5) * zoomValue + ...
-        vec2 positionValue = position * positionEffect * 0.1;
-        vec2 offset = (depth - 0.5) * positionValue;
+        vec2 perspectiveValue = perspective * perspectiveEffect * 0.1;
+        vec2 offset = (depth - 0.5) * perspectiveValue;
 
         vec4 color = texture2D(image, uv + offset);
 
