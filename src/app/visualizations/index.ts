@@ -8,24 +8,24 @@ import vivaLaVida from "./viva-la-vida";
 import crises from "./crises";
 import pushTheSkyAway from "./push-the-sky-away";
 import minorEarthMajorSky from "./minor-earth-major-sky";
+import violator from "./violator";
 
 export default [
   unknownPleasures,
-  santigold,
   theDarkSideOfTheMoon,
-  chvrchesEveryEyeOpen,
+  violator,
   karpatenhund,
+  chvrchesEveryEyeOpen,
   crises,
   pushTheSkyAway,
+  santigold,
   minorEarthMajorSky,
-  vivaLaVida,
-  velvetUnderground,
+  // vivaLaVida,
+  // velvetUnderground,
 ];
 
 // Kraftwerk
 // The Sounds
-// Depeche Mode - Violator
-
 // Blondie - Parallel Lines
 // Green Day - American Idiot
 // Yeah Yeah Yeahs - It's Blitz!
