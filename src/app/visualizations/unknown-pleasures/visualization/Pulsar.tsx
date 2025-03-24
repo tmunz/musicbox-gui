@@ -19,7 +19,6 @@ export const Pulsar = ({ width, height, sampleProvider }: PulsarProps) => {
     return {
       sampleData: { value: sampleTexture },
       sampleDataSize: { value: { x: sampleTexture.image.width, y: sampleTexture.image.height } },
-      samplesActive: { value: sampleProvider.active ? 1 : 0 },
     }
   };
 
@@ -48,7 +47,6 @@ export const Pulsar = ({ width, height, sampleProvider }: PulsarProps) => {
       varying vec2 vSize;
       uniform sampler2D sampleData;
       uniform vec2 sampleDataSize;
-      uniform int samplesActive;
 
       float _value(vec2 uv) {
         float currValue = texture2D(sampleData, uv).r;
