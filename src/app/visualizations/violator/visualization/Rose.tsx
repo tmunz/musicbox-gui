@@ -53,7 +53,7 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
     fragmentShader={`
       precision mediump float;
       #define PI 3.14159
-      #define STROKE_WIDTH 3.
+      #define STROKE_WIDTH 2.
 
       varying vec2 vUv;
       varying vec2 vSize;
@@ -67,7 +67,7 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
       const float leafScale = .18;
       const float blossomScale = .12;
       const float branchRatio = .5;
-      const float angleOffset = radians(65.);
+      const float angleOffset = radians(55.);
       const vec4 color1 = vec4(.525, .094, .098, 1.);
       const vec4 color2 = vec4(.9, .9, .9, 1.);
       const float spaceY = .1;
@@ -98,7 +98,7 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
 
       vec2 _leafShape(vec2 uv) {
         float taperFactor = pow(clamp(uv.y, 0., 1.), .5);
-        float leafWidth = .05 + mix(1., 0., taperFactor) * (pow(taperFactor, 4.)) * 8.;
+        float leafWidth = .05 + mix(1., 0., taperFactor) * (pow(taperFactor, 4.)) * 12.;
         return vec2((uv.x - 0.5) / leafWidth + 0.5, uv.y);
       }
 
@@ -111,6 +111,13 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
 
       float _wind(int p) {
         return 0.05 * sin(iTime + float(p));
+      }
+
+      float _value(vec2 uv) {
+        vec2 texelSize = 1.0 / sampleDataSize;
+        float y1 = floor(uv.y * sampleDataSize.y) / sampleDataSize.y;
+        float y2 = y1 + texelSize.y;
+        return mix(texture2D(sampleData, vec2(uv.x, y1)), texture2D(sampleData, vec2(uv.x, y2)), fract(uv.y * sampleDataSize.y)).r;
       }
 
       vec4 rose(vec2 uv) {        
@@ -139,11 +146,11 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
             c = mix(c, color1, _line(uv, leafBranch, leafStart, STROKE_WIDTH / vSize.y));
             vec2 leafUv = _leafShape(_transformUv(uv, leafStart, branchAngle + leafAngle, leafScale));
             vec2 leafValueUv = vec2(leafUv.x, (leafUv.y + float(d * leafsPerBranch + b)) / leafs);
-            float value = texture2D(sampleData, leafValueUv).r;
+            float value = _value(leafValueUv);
             leafUv = vec2((leafUv.x - .5) / (.5 + .5 * value) + .5, leafUv.y);
-            if (all(greaterThanEqual(leafUv, vec2(0.))) && all(lessThanEqual(leafUv, vec2(1.)))) {
-              c = color1;
-            }
+            float maskX = smoothstep(0., 1. / vSize.x, leafUv.x) * smoothstep(1. + 1. / vSize.x, 1., leafUv.x);
+            float maskY = smoothstep(0., 1. / vSize.y, leafUv.y) * smoothstep(1. + 1. / vSize.y, 1., leafUv.y);
+            c = mix(c, color1, maskX * maskY);
           }
         }
  
@@ -151,10 +158,9 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
         mainEnd = current + 2. * baseLength * vec2(sin(mainAngle), cos(mainAngle));
         c = mix(c, color1, _line(uv, current, mainEnd, STROKE_WIDTH / vSize.y));
         vec2 blossomUv = _blossomShape(_transformUv(uv, mainEnd, mainAngle, blossomScale));
-        if (all(greaterThanEqual(blossomUv, vec2(0.))) && all(lessThanEqual(blossomUv, vec2(1.)))) {
-          c = color1;
-        }
-
+        float maskX = smoothstep(0., 1. / vSize.x, blossomUv.x) * smoothstep(1. + 1. / vSize.x, 1., blossomUv.x);
+        float maskY = smoothstep(0., 1. / vSize.y, blossomUv.y) * smoothstep(1. + 1. / vSize.y, 1., blossomUv.y);
+        c = mix(c, color1, maskX * maskY);
         return c;
       }
 
