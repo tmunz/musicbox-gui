@@ -1,6 +1,6 @@
 import { SampleProvider } from "../../../audio/SampleProvider";
 
-export function convertRoseLeafData(sampleProvider?: SampleProvider) {
+export function convertWeightedMaxData(sampleProvider?: SampleProvider) {
   if (!sampleProvider) return new Uint8Array();
   const result = new Uint8Array(sampleProvider.frequencyBands);
   result.set(convert(sampleProvider.getMax(), sampleProvider.sampleSize));
