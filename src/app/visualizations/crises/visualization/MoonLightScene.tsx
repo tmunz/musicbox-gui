@@ -59,11 +59,14 @@ export const MoonLightScene = ({ width, height, sampleProvider }: MoonLightScene
       uniform float sampleDataAvg;
 
       float _value(vec2 uv) {
-        float topLeft = texture2D(sampleData, uv).r;
-        float topRight = texture2D(sampleData, uv + vec2(1. / sampleDataSize.x, 0.)).r;
-        float bottomLeft = texture2D(sampleData, uv + vec2(0., 1. / sampleDataSize.y)).r;
-        float bottomRight = texture2D(sampleData, uv + vec2(1. / sampleDataSize.x, 1. / sampleDataSize.y)).r;
+        float g = 1.5;
+        float topLeft = pow(texture2D(sampleData, uv).r, g);
+        float topRight = pow(texture2D(sampleData, uv + vec2(1. / sampleDataSize.x, 0.)).r, g);;
+        float bottomLeft = pow(texture2D(sampleData, uv + vec2(0., 1. / sampleDataSize.y)).r, g);;
+        float bottomRight = pow(texture2D(sampleData, uv + vec2(1. / sampleDataSize.x, 1. / sampleDataSize.y)).r, g);;
+
         vec2 f = fract(uv * sampleDataSize);
+
         float topInterp = mix(topLeft, topRight, f.x);
         float bottomInterp = mix(bottomLeft, bottomRight, f.x);
         return mix(topInterp, bottomInterp, f.y);

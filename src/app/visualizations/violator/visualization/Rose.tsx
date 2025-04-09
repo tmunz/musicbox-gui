@@ -19,7 +19,7 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
   const [weightedMaxTexture, updateWeightedMaxTexture] = useSampleProviderTexture(sampleProvider, (sampleProvider) => convertWeightedMaxData(sampleProvider), () => 1);
 
   const { current: imageUrls } = useRef({
-    image: require('./rose.png'),
+    image: require('./test.png'),
   });
 
   const getUniforms = (rootState: RootState) => {
@@ -57,7 +57,7 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
     fragmentShader={`
       precision mediump float;
       #define PI 3.14159
-      #define STROKE_WIDTH 2.
+      #define STROKE_WIDTH 3.
 
       varying vec2 vUv;
       varying vec2 vSize;
@@ -87,6 +87,12 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
         return smoothstep(strokeWidth, strokeWidth - .5 / vSize.y, dist);
       }
 
+      vec4 _drawLine(vec4 c, vec4 color1, vec4 color2, vec2 uv, vec2 a, vec2 b, float strokeWidth) {
+        c = mix(c, color1, _line(uv, a, b, strokeWidth));
+        c = mix(c, color2, _line(uv, a, b, strokeWidth * .15));
+        return c;
+      }
+
       vec2 _rotatePoint(vec2 v, vec2 pivot, float angle) {
         float s = sin(angle);
         float c = cos(angle);
@@ -98,15 +104,15 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
         float taperFactor = pow(clamp(uv.y, 0., 1.), 5.);
         float leafWidth = pow(.5, 2.) * (1. - pow(taperFactor, 1.)) * mix(.08, 1., taperFactor) * 12.;
         float bottomRoundness = smoothstep(.0, .9, pow(uv.y, .3)) * .6;
-        float wave = uv.y * .05 * sin(.8 - 8. * uv.x);
-        return vec2((uv.x - 0.5) / (leafWidth + bottomRoundness) + 0.5, uv.y + wave);
+        float wave = uv.y * .05 * -sin(.8 - 8. * uv.x);
+        return vec2((uv.x - .5) / (leafWidth + bottomRoundness) + .5, uv.y + wave);
       }
 
       vec2 _leafShape(vec2 uv) {
         float taperFactor = pow(clamp(uv.y, 0., 1.), .5);
-        float leafWidth = .05 + mix(1., 0., taperFactor) * (pow(taperFactor, 4.)) * 9.;
-        float x = (uv.x - 0.5) / leafWidth + 0.5;
-        float y = uv.y - smoothstep(0.0, 1.0, abs(uv.x - 0.5));
+        float leafWidth = .05 + mix(1., 0., taperFactor) * (pow(taperFactor, 4.)) * 12.;
+        float x = (uv.x - .5) / leafWidth + .5;
+        float y = uv.y - smoothstep(0., 1., abs(uv.x - .5));
         return vec2(x, y);
       }
 
@@ -142,12 +148,12 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
         for (int d = 0; d < depth; d++) {
           float mainAngle = float(_wind(d));
           mainEnd = current + baseLength * vec2(sin(mainAngle), cos(mainAngle));
-          c = mix(c, color1, _line(uv, current, mainEnd, STROKE_WIDTH / vSize.y));
+          c = _drawLine(c, color1, color2, uv, current, mainEnd, STROKE_WIDTH / vSize.y);
           current = mainEnd;
           float branchAngle = (float(d % 2) * 2. - 1.) * angleOffset + _wind(d + 1);
           vec2 branchVector = baseLength * branchRatio * vec2(sin(branchAngle), cos(branchAngle));
           vec2 branchEnd = current + branchVector;
-          c = mix(c, color1, _line(uv, current, branchEnd, STROKE_WIDTH / vSize.y));
+          c = _drawLine(c, color1, color2, uv, current, branchEnd, STROKE_WIDTH / vSize.y);
           float direction = current.x < branchEnd.x ? -1. : 1.;
 
           for (int b = 0; b < leafsPerBranch; b++) {
@@ -155,20 +161,25 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
             vec2 leafBranch = current + branchVector * (.5 + .5 * (1. - abs(sin(leaf - 0.33))));
             float leafAngle = leaf * angleOffset + _wind(d + b);
             vec2 leafStart = leafBranch + 0.02 * vec2(sin(branchAngle + leafAngle), cos(branchAngle + leafAngle));
-            c = mix(c, color1, _line(uv, leafBranch, leafStart, STROKE_WIDTH / vSize.y));
+            c = _drawLine(c, color1, color2, uv, leafBranch, leafStart, STROKE_WIDTH / vSize.y);
             vec2 leafUv = _leafShape(_transformUv(uv, leafStart, branchAngle + leafAngle, leafScale));
-            vec2 leafValueUv = vec2(d % 2 == 0 ? leafUv.x : 1. - leafUv.x, (leafUv.y + float(d * leafsPerBranch + b)) / leafs);
-            leafUv = vec2((leafUv.x - .5) / (.5 + .5 * _weightedMax(leafValueUv)) + .5, leafUv.y);
-            float maskX = smoothstep(0., 1. / vSize.x, leafUv.x) * smoothstep(1. + 1. / vSize.x, 1., leafUv.x);
-            float maskY = smoothstep(0., 1. / vSize.y, leafUv.y) * smoothstep(1. + 1. / vSize.y, 1., leafUv.y);
-            float value = _value(vec2(leafValueUv.y, leafValueUv.x)); // abs(2. * leafValueUv.x - 1.))); // * (1. - (2. * abs(leafUv.x - .5)));
-            c = mix(c, mix(color1, color2, smoothstep(.65, .8, value)), maskX * maskY);
+            for (int side = 0; side < 2; side++) {
+              float leafValueY = (leafUv.y + float((d * leafsPerBranch + b) * 2 + side)) / (leafs * 2.);
+              float leafValueX = (leafUv.x - .5) / (.5 + .5 * _weightedMax(vec2(0., leafValueY))) + .5;
+              vec2 leafValueUv = vec2(1. - abs(float((d + side) % 2) - leafValueX), leafValueY);
+              vec2 leafSideUv = vec2(((d + side) % 2 == 0 ? leafValueX : 1. - leafValueX) * 2., leafUv.y);
+              float maskX = smoothstep(0., 1. / vSize.x, leafSideUv.x) * smoothstep(1., 1. - 1. / vSize.x, leafSideUv.x);
+              float maskY = smoothstep(0., 1. / vSize.y, leafSideUv.y) * smoothstep(1., 1. - 1. / vSize.y, leafSideUv.y);
+              float value = _value(leafValueUv.yx); 
+              // c = mix(c, texture2D(image, leafValueUv), maskX * maskY);
+              c = mix(c, mix(color1, color2, smoothstep(.5, .6, value * clamp(leafSideUv.x + .3, 0., 1.))), maskX * maskY);
+            }
           }
         }
  
         float mainAngle = float(_wind(depth));
         mainEnd = current + 2. * baseLength * vec2(sin(mainAngle), cos(mainAngle));
-        c = mix(c, color1, _line(uv, current, mainEnd, STROKE_WIDTH / vSize.y));
+        c = _drawLine(c, color1, color2, uv, current, mainEnd, STROKE_WIDTH / vSize.y);
         vec2 blossomUv = _blossomShape(_transformUv(uv, mainEnd, mainAngle, blossomScale));
         float maskX = smoothstep(0., 1. / vSize.x, blossomUv.x) * smoothstep(1. + 1. / vSize.x, 1., blossomUv.x);
         float maskY = smoothstep(0., 1. / vSize.y, blossomUv.y) * smoothstep(1. + 1. / vSize.y, 1., blossomUv.y);
