@@ -19,7 +19,7 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
   const [weightedMaxTexture, updateWeightedMaxTexture] = useSampleProviderTexture(sampleProvider, (sampleProvider) => convertWeightedMaxData(sampleProvider), () => 1);
 
   const { current: imageUrls } = useRef({
-    image: require('./test.png'),
+    image: require('./rose.png'),
   });
 
   const getUniforms = (rootState: RootState) => {
