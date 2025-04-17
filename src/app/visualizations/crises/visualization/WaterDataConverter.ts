@@ -1,6 +1,6 @@
 import { SampleProvider } from "../../../audio/SampleProvider";
 
-export type WaterData = { value: number, sampleIndex: number };
+type WaterData = { value: number, sampleIndex: number };
 
 export function convertWaterData (sampleProvider?: SampleProvider) {
   if (!sampleProvider) return new Uint8Array();

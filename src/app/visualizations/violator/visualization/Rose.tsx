@@ -3,7 +3,8 @@ import { ShaderImage } from '../../../ui/shader-image/ShaderImage';
 import { SampleProvider } from '../../../audio/SampleProvider';
 import { useSampleProviderTexture } from '../../../audio/useSampleProviderTexture';
 import { RootState } from '@react-three/fiber';
-import { convertWeightedMaxData } from './RoseDataConverter';
+import { convertLeafData, convertWeightedMaxData, getBassValue } from './RoseDataConverter';
+import { gaussianBlur } from '../../../utils/ShaderUtils';
 
 export interface RoseProps {
   width: number;
@@ -17,6 +18,7 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
 
   const [sampleTexture, updateSampleTexture] = useSampleProviderTexture(sampleProvider);
   const [weightedMaxTexture, updateWeightedMaxTexture] = useSampleProviderTexture(sampleProvider, (sampleProvider) => convertWeightedMaxData(sampleProvider), () => 1);
+  const [leafTexture, updateLeafTexture] = useSampleProviderTexture(sampleProvider, (sampleProvider) => convertLeafData(sampleProvider));
 
   const { current: imageUrls } = useRef({
     image: require('./rose.png'),
@@ -25,12 +27,17 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
   const getUniforms = (rootState: RootState) => {
     updateSampleTexture();
     updateWeightedMaxTexture();
+    updateLeafTexture();
+    const bassValue = getBassValue(sampleProvider);
     return {
       iTime: { value: rootState.clock.elapsedTime },
       sampleData: { value: sampleTexture },
       sampleDataSize: { value: { x: sampleTexture.image.width, y: sampleTexture.image.height } },
       weightedMaxData: { value: weightedMaxTexture },
       weightedMaxDataSize: { value: { x: weightedMaxTexture.image.width, y: weightedMaxTexture.image.height } },
+      leafData: { value: leafTexture },
+      leafDataSize: { value: { x: leafTexture.image.width, y: leafTexture.image.height } },
+      bassValue: { value: bassValue },
       depth: { value: depth },
       leafsPerBranch: { value: leafsPerBranch },
     }
@@ -57,7 +64,7 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
     fragmentShader={`
       precision mediump float;
       #define PI 3.14159
-      #define STROKE_WIDTH 3.
+      #define STROKE_WIDTH 0.005
 
       varying vec2 vUv;
       varying vec2 vSize;
@@ -67,6 +74,9 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
       uniform vec2 sampleDataSize;
       uniform sampler2D weightedMaxData;
       uniform vec2 weightedMaxDataSize;
+      uniform sampler2D leafData;
+      uniform vec2 leafDataSize;
+      uniform float bassValue;
       uniform int depth;
       uniform int leafsPerBranch;
 
@@ -75,8 +85,10 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
       const float branchRatio = .5;
       const float angleOffset = radians(65.);
       const vec4 color1 = vec4(.525, .094, .098, 1.);
-      const vec4 color2 = vec4(.9, .9, .9, 1.);
+      const vec4 color2 = vec4(.9, .8, .75, 1.);
       const float spaceY = .1;
+
+      ${ gaussianBlur }
 
       float _line(vec2 uv, vec2 a, vec2 b, float strokeWidth) {
         vec2 pa = uv - a;
@@ -84,12 +96,12 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
         float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
         vec2 closestPoint = a + h * ba;
         float dist = length(uv - closestPoint);
-        return smoothstep(strokeWidth, strokeWidth - .5 / vSize.y, dist);
+        return smoothstep(strokeWidth, strokeWidth - .5 / max(vSize.x, vSize.y), dist);
       }
 
       vec4 _drawLine(vec4 c, vec4 color1, vec4 color2, vec2 uv, vec2 a, vec2 b, float strokeWidth) {
         c = mix(c, color1, _line(uv, a, b, strokeWidth));
-        c = mix(c, color2, _line(uv, a, b, strokeWidth * .15));
+        c = mix(c, color2, _line(uv, a, b, strokeWidth * .2));
         return c;
       }
 
@@ -123,10 +135,6 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
         return _rotatePoint(leafUv, vec2(.5), angle);
       }
 
-      float _wind(int p) {
-        return 0.05 * sin(iTime + float(p));
-      }
-
       float _weightedMax(vec2 uv) {
         vec2 texelSize = 1.0 / weightedMaxDataSize;
         float y1 = floor(uv.y * weightedMaxDataSize.y) / weightedMaxDataSize.y;
@@ -146,40 +154,41 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
         vec2 mainEnd;
 
         for (int d = 0; d < depth; d++) {
-          float mainAngle = float(_wind(d));
+          float mainAngle = 0.;
           mainEnd = current + baseLength * vec2(sin(mainAngle), cos(mainAngle));
-          c = _drawLine(c, color1, color2, uv, current, mainEnd, STROKE_WIDTH / vSize.y);
+          c = _drawLine(c, color1, color2, uv, current, mainEnd, STROKE_WIDTH);
           current = mainEnd;
-          float branchAngle = (float(d % 2) * 2. - 1.) * angleOffset + _wind(d + 1);
+          float branchAngle = (float(d % 2) * 2. - 1.) * angleOffset;
           vec2 branchVector = baseLength * branchRatio * vec2(sin(branchAngle), cos(branchAngle));
           vec2 branchEnd = current + branchVector;
-          c = _drawLine(c, color1, color2, uv, current, branchEnd, STROKE_WIDTH / vSize.y);
+          c = _drawLine(c, color1, color2, uv, current, branchEnd, STROKE_WIDTH);
           float direction = current.x < branchEnd.x ? -1. : 1.;
 
           for (int b = 0; b < leafsPerBranch; b++) {
             float leaf = direction * (-1. + 2. * float(b) / float(2));
             vec2 leafBranch = current + branchVector * (.5 + .5 * (1. - abs(sin(leaf - 0.33))));
-            float leafAngle = leaf * angleOffset + _wind(d + b);
+            float leafAngle = leaf * angleOffset;
             vec2 leafStart = leafBranch + 0.02 * vec2(sin(branchAngle + leafAngle), cos(branchAngle + leafAngle));
-            c = _drawLine(c, color1, color2, uv, leafBranch, leafStart, STROKE_WIDTH / vSize.y);
+            c = _drawLine(c, color1, color2, uv, leafBranch, leafStart, STROKE_WIDTH);
             vec2 leafUv = _leafShape(_transformUv(uv, leafStart, branchAngle + leafAngle, leafScale));
             for (int side = 0; side < 2; side++) {
               float leafValueY = (leafUv.y + float((d * leafsPerBranch + b) * 2 + side)) / (leafs * 2.);
               float leafValueX = (leafUv.x - .5) / (.5 + .5 * _weightedMax(vec2(0., leafValueY))) + .5;
               vec2 leafValueUv = vec2(1. - abs(float((d + side) % 2) - leafValueX), leafValueY);
+              // vec2 leafDataUv = vec2((leafUv.y + float((d * leafsPerBranch + b))) / leafs, leafValueUv.x);
               vec2 leafSideUv = vec2(((d + side) % 2 == 0 ? leafValueX : 1. - leafValueX) * 2., leafUv.y);
               float maskX = smoothstep(0., 1. / vSize.x, leafSideUv.x) * smoothstep(1., 1. - 1. / vSize.x, leafSideUv.x);
               float maskY = smoothstep(0., 1. / vSize.y, leafSideUv.y) * smoothstep(1., 1. - 1. / vSize.y, leafSideUv.y);
-              float value = _value(leafValueUv.yx); 
-              // c = mix(c, texture2D(image, leafValueUv), maskX * maskY);
-              c = mix(c, mix(color1, color2, smoothstep(.5, .6, value * clamp(leafSideUv.x + .3, 0., 1.))), maskX * maskY);
+              float value = gaussianBlur(leafData, leafValueUv.yx, .1, 9, leafDataSize).r; 
+              float v = smoothstep(.5, .6, value);
+              c = mix(c, mix(color1, color2, v), maskX * maskY);
             }
           }
         }
  
-        float mainAngle = float(_wind(depth));
+        float mainAngle = 0.;
         mainEnd = current + 2. * baseLength * vec2(sin(mainAngle), cos(mainAngle));
-        c = _drawLine(c, color1, color2, uv, current, mainEnd, STROKE_WIDTH / vSize.y);
+        c = _drawLine(c, color1, color2, uv, current, mainEnd, STROKE_WIDTH);
         vec2 blossomUv = _blossomShape(_transformUv(uv, mainEnd, mainAngle, blossomScale));
         float maskX = smoothstep(0., 1. / vSize.x, blossomUv.x) * smoothstep(1. + 1. / vSize.x, 1., blossomUv.x);
         float maskY = smoothstep(0., 1. / vSize.y, blossomUv.y) * smoothstep(1. + 1. / vSize.y, 1., blossomUv.y);
@@ -195,50 +204,3 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
   />;
 }
 
-
-// mat3 rotate(float angle) {
-//   float c = cos(angle);
-//   float s = sin(angle);
-//   return mat3(vec3(c, s, 0), vec3(-s, c, 0), vec3(0, 0, 1)); 
-// }
-
-// mat3 translate(vec2 t) {
-//   return mat3(vec3(1, 0, 0), vec3(0, 1, 0), vec3(-t, 1)); 
-// }
-
-        // vec2 transformedPoint = (rotate(radians(30.0)) * translate(vec2(.55, .69)) * vec3(uv, 1.)).xy;
-
-        // int maxIterations = int(pow(float(branches), float(depth))); 
-        // float minDistance = 1.0;
-
-        // int iteration = 0;
-        // for (int count = 0; count <= 100; ++count) {
-        //   int segmentOffset = int(pow(float(branches), float(depth)));
-        //   vec2 currentPoint = startPoint;
-
-        //   for (int level = 1; level <= depth; ++level) {
-        //     float segmentLength = 1.0 / pow(1. / lengthRatio, float(level));            
-        //     segmentOffset /= branches; 
-
-        //     int branchIndex = iteration / segmentOffset;
-        //     float branchOffset = float(branchIndex % branches) - (float(branches) - 1.0) / 2.0; 
-          
-        //     mat3 windEffect = rotate(0.2 * sin(iTime + (branchOffset == 1.0 ? PI * 2.0 : 1.0)));
-        //     mat3 positionTransform = translate(vec2(0, branchOffset == 0.0 ? -4.0 * segmentLength : -2.0 * segmentLength));
-        //     mat3 transformMatrix = windEffect * rotate(branchOffset * angle * PI / 180.0) * positionTransform;
-
-        //     currentPoint = (transformMatrix * vec3(currentPoint, 1)).xy;
-        //     float distanceToLine = line_(currentPoint, vec2(strokeWidth, segmentLength));   
-
-        //     if (distanceToLine - 2.0 * segmentLength > 0.0) { 
-        //       iteration += segmentOffset - 1; 
-        //       break;
-        //     }
-        //     minDistance = min(minDistance, distanceToLine);
-        //   } 
-
-        //   iteration++;
-        //   if (iteration > maxIterations) break;
-        // }
-        
-        // return 1. - min(minDistance, line_(startPoint, vec2(strokeWidth, 1.))) * 50.; 
