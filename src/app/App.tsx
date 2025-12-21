@@ -47,15 +47,16 @@ export function App() {
   };
 
   const items = visualizations.map((v) => {
+    const active = appState.visualization?.id === v.id;
     return {
       id: v.id,
       component: (
         <VisualizationComponent
           key={v.id}
-          visualization={v}
+          visualization={active ? appState.visualization : v}
           sampleProvider={sampleProvider}
           canvas={{ width, height }}
-          isActive={v.id === appState.visualization?.id}
+          isActive={active}
         />
       )
     };

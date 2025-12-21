@@ -6,7 +6,7 @@ import { useFade } from '../utils/useFade';
 import { CAROUSEL_TRANSITION_DURATION_MS } from '../ui/carousel/CarouselConstants';
 
 interface VisualizationComponentProps {
-  visualization: Visualization;
+  visualization: Visualization | null;
   sampleProvider: SampleProvider;
   canvas: { width: number; height: number };
   isActive: boolean;
@@ -16,9 +16,9 @@ export const VisualizationComponent = ({ visualization, sampleProvider, canvas, 
   const { visible, fadeStyle } = useFade(isActive, CAROUSEL_TRANSITION_DURATION_MS * 1);
 
   return (
-    <div className='visualization-component' style={{ backgroundColor: visualization.color }}>
+    <div className='visualization-component' style={{ backgroundColor: visualization?.color }}>
       <div style={fadeStyle}>
-        {visible && (
+        {visualization && visible && (
           <visualization.component
             sampleProvider={sampleProvider}
             canvas={canvas}
