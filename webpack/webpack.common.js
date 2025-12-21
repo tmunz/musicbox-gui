@@ -3,7 +3,7 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const package = require('../package.json');
+const pkg = require('../package.json');
 
 module.exports = (env) => ({
   entry: {
@@ -12,6 +12,7 @@ module.exports = (env) => ({
   module: {
     rules: [{
       test: /\.(j|t)sx?$/,
+      exclude: /node_modules/,
       loader: 'babel-loader',
     }, {
       test: /\.(ttf|eot|svg|otf)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
@@ -58,12 +59,12 @@ module.exports = (env) => ({
     }),
     new webpack.DefinePlugin({
       "process.env": {
-        "APP_VERSION": JSON.stringify(package.version),
+        "APP_VERSION": JSON.stringify(pkg.version),
         "MODE": JSON.stringify(env),
       }
     }),
   ],
   resolve: {
-    extensions: ['.js', '.ts', '.tsx', '.styl']
+    extensions: ['.js', '.ts', '.tsx']
   },
 });

@@ -149,6 +149,7 @@ export const ShaderImageThreePlane = ({
 };
 
 export const ShaderImageThree = (props: ShaderImageThreeProps) => {
+  
   return (
     <Canvas orthographic style={props.style}>
       <OrthographicCamera

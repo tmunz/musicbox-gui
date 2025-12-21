@@ -1,5 +1,5 @@
 import './Audio.css';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAudio } from './useAudio';
 import { MediaStreamType } from './MediaStreamType';
 import { IconButton } from '../ui/IconButton';
@@ -15,6 +15,12 @@ export const Audio = ({ onChange }: AudioProviderProps) => {
   const [error, setError] = useState<string | null>(null);
   const [url, setUrl] = useState<string>('https://rautemusik.stream25.radiohost.de/rm-80s_mp3-192');
 
+  // TODO, use state management for errors
+  useEffect(() => {
+    if (error) {
+      alert(error);
+    }
+  }, [error]);
 
   const activateMicrophone = async () => {
     stop();

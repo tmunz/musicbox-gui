@@ -1,4 +1,6 @@
 .carousel {
+  --carousel-transition-duration: 0.5s;
+  
   position: relative;
   width: 100%;
   height: 100%;
@@ -9,7 +11,7 @@
     display: flex;
     width: 100%;
     height: 100%;
-    transition: transform 0.5s ease-in-out;
+    transition: transform var(--carousel-transition-duration) ease-in-out;
     will-change: transform;
   }
 

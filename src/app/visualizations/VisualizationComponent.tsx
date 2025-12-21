@@ -1,18 +1,19 @@
 import './VisualizationComponent.css';
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { Visualization } from './Visualization';
+import { SampleProvider } from '../audio/SampleProvider';
 import { useFade } from '../utils/useFade';
+import { CAROUSEL_TRANSITION_DURATION_MS } from '../ui/carousel/CarouselConstants';
 
 interface VisualizationComponentProps {
   visualization: Visualization;
-  sampleProvider: any;
+  sampleProvider: SampleProvider;
   canvas: { width: number; height: number };
-  active?: boolean;
+  isActive: boolean;
 }
 
-export const VisualizationComponent = ({ visualization, sampleProvider, canvas, active = true }: VisualizationComponentProps) => {
-
-  const { visible, fadeStyle } = useFade(active, 500, 200);
+export const VisualizationComponent = ({ visualization, sampleProvider, canvas, isActive }: VisualizationComponentProps) => {
+  const { visible, fadeStyle } = useFade(isActive, CAROUSEL_TRANSITION_DURATION_MS * 1);
 
   return (
     <div className='visualization-component' style={{ backgroundColor: visualization.color }}>

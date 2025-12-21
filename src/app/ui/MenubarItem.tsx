@@ -1,7 +1,7 @@
 import './MenubarItem.css';
-import React, { useState, forwardRef, useImperativeHandle, ReactNode } from 'react';
+import React, { useState, forwardRef, useImperativeHandle, ReactNode, ComponentType } from 'react';
 import { IconButton } from './IconButton';
-import { IconType } from 'react-icons';
+import { IconBaseProps } from 'react-icons';
 import { PiX } from 'react-icons/pi';
 
 export interface MenubarItemRef {
@@ -9,7 +9,7 @@ export interface MenubarItemRef {
 }
 
 interface MenubarItemProps {
-  icon: IconType;
+  icon: ComponentType<IconBaseProps>;
   children: ReactNode;
 }
 

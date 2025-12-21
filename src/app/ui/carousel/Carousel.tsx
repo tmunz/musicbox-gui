@@ -1,8 +1,10 @@
 import './Carousel.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { PiCaretLeft, PiCaretRight } from 'react-icons/pi';
-import { IconButton } from './IconButton';
-import { useAutoHide } from '../utils/useAutoHide';
+import { IconButton } from '../IconButton';
+import { useAutoHide } from '../../utils/useAutoHide';
+import { CarouselItem } from './CarouselItem';
+import { CAROUSEL_TRANSITION_DURATION_CSS } from './CarouselConstants';
 
 interface CarouselProps {
   items: { id: string; component: React.ReactNode }[];
@@ -91,13 +93,15 @@ export const Carousel = ({ items, onSelect, selectedId, defaultFocus = false }: 
         className='carousel-track'
         style={{
           transform: `translateX(calc(${-index * 100}% + ${dragOffset}px))`,
-          transition: isDragging ? 'none' : 'transform 0.5s ease-in-out',
+          transition: isDragging ? 'none' : `transform ${ CAROUSEL_TRANSITION_DURATION_CSS } ease-in-out`,
         }}
       >
         {items.map((item) => (
-          <div className='carousel-slide' key={item.id}>
-            {item.component}
-          </div>
+          <CarouselItem 
+            key={item.id}
+            item={item}
+            isActive={item.id === selectedId}
+          />
         ))}
       </div>
 

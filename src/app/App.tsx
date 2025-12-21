@@ -7,7 +7,7 @@ import visualizations from './visualizations';
 import { Menubar } from './ui/Menubar';
 import { SettingsComponent } from './settings/SettingsComponent';
 import { useAppState, VisualizationAction } from './AppContext';
-import { Carousel } from './ui/Carousel';
+import { Carousel } from './ui/carousel';
 import { VisualizationComponent } from './visualizations/VisualizationComponent';
 import { MenubarItem } from './ui/MenubarItem';
 import { PiInfo, PiSlidersHorizontalDuotone } from 'react-icons/pi';
@@ -23,7 +23,6 @@ export function App() {
 
   const [sampleProvider, setSampleProvider] = useState<SampleProvider>(new SampleProvider(1, new Uint8Array()));
 
-
   useEffect(() => {
     const pathId = location.pathname.replace('/', '');
     const visualization = visualizations.find((v) => v.id === pathId);
@@ -33,7 +32,7 @@ export function App() {
       navigate(`/`, { replace: false });
       dispatch({ type: VisualizationAction.SET_VISUALIZATION, visualization: visualizations[0] });
     }
-  }, [location.pathname, navigate]);
+  }, [location.pathname, navigate, dispatch]);
 
   const selectVisualization = (id: string) => {
     const visualization = visualizations.find((v) => v.id === id);
@@ -48,15 +47,17 @@ export function App() {
   };
 
   const items = visualizations.map((v) => {
-    const active = appState.visualization?.id === v.id;
     return {
-      id: v.id, component: <VisualizationComponent
-        key={v.id}
-        visualization={active ? appState.visualization! : v}
-        sampleProvider={sampleProvider}
-        canvas={{ width, height }}
-        active={active}
-      />
+      id: v.id,
+      component: (
+        <VisualizationComponent
+          key={v.id}
+          visualization={v}
+          sampleProvider={sampleProvider}
+          canvas={{ width, height }}
+          isActive={v.id === appState.visualization?.id}
+        />
+      )
     };
   });
 

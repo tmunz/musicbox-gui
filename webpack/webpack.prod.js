@@ -5,6 +5,6 @@ module.exports = {
   devtool: 'hidden-source-map',
   output: {
     path: path.resolve(__dirname, '..', './dist'),
-    filename: 'bundle.[name].[hash].js',
+    filename: 'bundle.[name].[contenthash].js',
   },
 };

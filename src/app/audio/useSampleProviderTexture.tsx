@@ -13,7 +13,7 @@ export const useSampleProviderTexture = (
   useEffect(() => {
     const width = getWidth(sampleProvider);
     const height = getHeight(sampleProvider);
-    if (sampleProvider && (width !== sampleTexture.image.width || height !== sampleTexture.image.height)) {
+    if (sampleProvider && width > 0 && height > 0 && (width !== sampleTexture.image.width || height !== sampleTexture.image.height)) {
       setSampleTexture(new DataTexture(getData(sampleProvider), width, height, RedFormat, UnsignedByteType));
     }
   }, [sampleProvider?.frequencyBands, sampleProvider?.sampleSize]);
@@ -22,8 +22,10 @@ export const useSampleProviderTexture = (
     if (!sampleProvider) return;
     const width = getWidth(sampleProvider);
     const height = getHeight(sampleProvider);
-    Object.assign(sampleTexture.image, { data: getData(sampleProvider), width, height });
-    sampleTexture.needsUpdate = true;
+    if (width > 0 && height > 0) {
+      Object.assign(sampleTexture.image, { data: getData(sampleProvider), width, height });
+      sampleTexture.needsUpdate = true;
+    }
   }
 
   return [sampleTexture, applyToSampleTexture];
