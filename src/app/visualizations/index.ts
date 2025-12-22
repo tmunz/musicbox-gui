@@ -9,10 +9,12 @@ import crises from "./crises";
 import pushTheSkyAway from "./push-the-sky-away";
 import minorEarthMajorSky from "./minor-earth-major-sky";
 import violator from "./violator";
+import transEuropeExpress from "./trans-europe-express";
 
 export default [
   unknownPleasures,
   theDarkSideOfTheMoon,
+  transEuropeExpress,
   violator,
   karpatenhund,
   chvrchesEveryEyeOpen,
@@ -20,6 +22,7 @@ export default [
   pushTheSkyAway,
   santigold,
   minorEarthMajorSky,
+
   // vivaLaVida,
   // velvetUnderground,
 ];

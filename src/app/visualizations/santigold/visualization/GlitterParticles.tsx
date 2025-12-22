@@ -3,8 +3,8 @@ import { useFrame } from '@react-three/fiber';
 import { Points, Texture } from 'three';
 import { SampleProvider } from '../../../audio/SampleProvider';
 import { useTexture } from '@react-three/drei';
-import './GlitterMaterial';
 import { random } from '../../../utils/Random';
+import './GlitterMaterial';
 
 export interface GlitterParticlesProps {
   sampleProvider: SampleProvider;
@@ -32,10 +32,10 @@ export const GlitterParticles = ({ sampleProvider, count = 50, textureScale = 0.
     const xn = x * 2 - 1;
     const yn = y * 2 - 1;
     const bow = Math.pow(Math.cos(Math.pow(y, 2) * Math.PI * 0.5), 3) * 3;
-    const width = -Math.pow(y, 2) + 0.6;
+    const width = -Math.pow(y, 2) + 0.7;
     const circle = Math.pow(1 - yn * yn, 0.5);
     const x0 = x * width - random(i + 10532437) * (1 - y) + bow + xn * circle;
-    return [x0 - 0.7, yn * 1.6 + random(i) + 0.4, k * circle * (1 - Math.abs(xn))];
+    return [x0 - 0.75, yn * 1.6 + random(i) + 0.4, k * circle * (1 - Math.abs(xn))];
   }
 
   useFrame(() => {

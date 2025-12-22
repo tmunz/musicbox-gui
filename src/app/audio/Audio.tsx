@@ -54,7 +54,7 @@ export const Audio = ({ onChange }: AudioProviderProps) => {
     stop();
     try {
       const fileUrl = URL.createObjectURL(file);
-      const { stream, audio } = await useAudio(fileUrl);
+      const { stream, audio } = await useAudio(fileUrl, true);
       setCurrentStream({ stream, type: MediaStreamType.FILE });
       setAudioPlayer(audio);
       setFileName(file.name);
