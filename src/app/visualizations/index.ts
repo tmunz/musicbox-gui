@@ -10,6 +10,7 @@ import pushTheSkyAway from "./push-the-sky-away";
 import minorEarthMajorSky from "./minor-earth-major-sky";
 import violator from "./violator";
 import transEuropeExpress from "./trans-europe-express";
+import game from "./game";
 
 export default [
   unknownPleasures,
@@ -25,6 +26,8 @@ export default [
 
   // vivaLaVida,
   // velvetUnderground,
+
+  game
 ];
 
 // Kraftwerk
