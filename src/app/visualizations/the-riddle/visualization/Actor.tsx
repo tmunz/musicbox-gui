@@ -85,9 +85,9 @@ export const drawActor = `
 
   float sdfBody(vec2 uv, vec2 position, vec2 leftFootPosition, vec2 rightFootPosition, vec2 headPosition) {
     float footThickness = 0.01;
-    float headThickness = 0.04;
+    float headThickness = 0.035;
     float footDistanceFactor = 0.9;
-    float headDistanceFactor = 0.5;
+    float headDistanceFactor = 0.35;
     vec2 points[6];
     bool leftIsLower = leftFootPosition.x < rightFootPosition.x;
     vec2 lowerFoot = leftIsLower ? leftFootPosition : rightFootPosition;
@@ -104,7 +104,7 @@ export const drawActor = `
     points[3] = mix(higherFoot, position, 1. - footDistanceFactor);
     points[4] = mix(higherFoot - perpHigher * 2. * footThickness, position, 1. - footDistanceFactor);
     points[5] = mix(lowerFoot, position, 1. - footDistanceFactor);
-    float bendFactors[6] = float[](0.1, -0.2, 2. * -higherFoot.x, -0.1, -0.5, -0.1);
+    float bendFactors[6] = float[](-0.25, -0.1, 2. * higherFoot.x, -0.1, -0.3, -0.1);
     return sdfPolygon(uv, points, bendFactors);
   }
 
@@ -126,11 +126,13 @@ export const drawActor = `
 
   Shape makeHead(vec2 uv, float phase, float y, float focusValue, float mainValue) {
     Shape s;
-    s.pos = vec2((mainValue - 0.5) * 0.1, y + sin(phase * 2.0) * 0.002);
+    s.pos = vec2((mainValue - 0.3) * 0.1, y + sin(phase * 2.0) * 0.002);
     s.angle = 2. * focusValue;
     float ellipseSdf = sdfEllipse(uv - s.pos, vec2(0.045, 0.035), s.angle);
-    vec2 eyePos = s.pos + vec2(0.022 * cos(s.angle - 0.7), -0.01 * sin(s.angle - 0.7));
-    float eyeSdf = length(uv - eyePos) - 0.005;
+    vec2 eyePos = s.pos + vec2(0.035 * cos(s.angle - 0.7), -0.01 * sin(s.angle - 0.7));
+    float lineThickness = 0.002;
+    float lineLength = 0.004;
+    float eyeSdf = max(abs(uv.x - eyePos.x) - lineThickness, abs(uv.y - eyePos.y) - lineLength);
     s.sdf = max(ellipseSdf, -eyeSdf);
     return s;
   }
@@ -142,6 +144,20 @@ export const drawActor = `
     s.angle = 0.0;
     s.sdf = sdfBody(uv, s.pos, leftFootPos, rightFootPos, headPos);
     return s;
+  }
+
+  float makeHair(vec2 uv, Shape head, vec4 lineColor, vec4 color) {
+    float angle = head.angle + PI / 4.0;
+    vec2 dir = vec2(sin(angle), cos(angle));
+    vec2 hairStart = head.pos + dir * 0.04;
+    float hairLength = 0.022;
+    float t = clamp(dot(uv - hairStart, dir) / hairLength, 0.0, 1.0);
+    float curveAmount = 0.01 * t * (1.0 - t);
+    float headXInfluence = -head.pos.x * 0.1 * t;
+    vec2 hairCurve = hairStart + dir * hairLength * t + vec2(curveAmount + headXInfluence, 0.0);
+    float hairDist = length(uv - hairCurve);
+    float hairAlpha = smoothstep(0.004, 0.0025 - 0.0005, hairDist); // Loosen threshold
+    return hairAlpha;
   }
 
   vec4 drawActor(
@@ -161,15 +177,7 @@ export const drawActor = `
     color = blendObject(color, leftFoot.sdf, 0.18, fillColor, lineColor, 1.0 - step(body.sdf, 0.0));
     color = blendObject(color, head.sdf, 0.12, fillColor, lineColor, 1.0 - step(body.sdf, 0.0));
     color = blendObject(color, rightFoot.sdf, 0.18, fillColor, lineColor, 1.0 - step(body.sdf, 0.0));
-
-    float angle = head.angle + 0.4;
-    vec2 dir = vec2(sin(angle), cos(angle));
-    vec2 lineStart = head.pos + dir * 0.04;
-    vec2 lineEnd = lineStart + dir * 0.02;
-    float t = clamp(dot(uv - lineStart, lineEnd - lineStart) / dot(lineEnd - lineStart, lineEnd - lineStart), 0.0, 1.0);
-    float lineDist = length(uv - mix(lineStart, lineEnd, t));
-    float lineAlpha = smoothstep(0.004, 0.004 - 0.001, lineDist);
-    color = blendOver(vec4(lineColor.rgb, lineAlpha), color);
+    color = blendOver(vec4(lineColor.rgb, makeHair(uv, head, lineColor, color)), color);
     return color;
   }
 `;
