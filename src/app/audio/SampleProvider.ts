@@ -1,9 +1,11 @@
 import { FixedSizeQueue } from '../utils/FixedSizeQueue';
 
+export type ActiveListener = (active: boolean) => void;
 export class SampleProvider extends FixedSizeQueue<Uint8Array> {
 
   private _active = false;
   private _frequencyBands = 1;
+  private _activeListeners: ActiveListener[] = [];
 
   constructor(size: number, defaultValue: Uint8Array) {
     super(size, defaultValue);
@@ -12,6 +14,19 @@ export class SampleProvider extends FixedSizeQueue<Uint8Array> {
 
   get active() {
     return this._active;
+  }
+
+  onActiveChange(listener: ActiveListener) {
+    this._activeListeners.push(listener);
+    return () => {
+      this._activeListeners = this._activeListeners.filter(l => l !== listener);
+    };
+  }
+
+  private _emitActiveChange() {
+    for (const listener of this._activeListeners) {
+      listener(this._active);
+    }
   }
 
   get frequencyBands() {
@@ -27,11 +42,15 @@ export class SampleProvider extends FixedSizeQueue<Uint8Array> {
   }
 
   push = (sample?: Uint8Array) => {
+    const prevActive = this._active;
     if (sample === undefined) {
       this._active = false;
     } else {
       this._active = true;
       super.push(sample);
+    }
+    if (this._active !== prevActive) {
+      this._emitActiveChange();
     }
   }
 
@@ -66,4 +85,13 @@ export class SampleProvider extends FixedSizeQueue<Uint8Array> {
       return { max, sampleIndex };
     });
   };
+}
+
+export function createDummySampleProvider(size: number, max: number = 255): SampleProvider {
+  const provider = new SampleProvider(size, new Uint8Array([0]));
+  for (let i = 0; i < size; i++) {
+    const value = Math.round((i / (size - 1)) * max);
+    provider.push(new Uint8Array([value]));
+  }
+  return provider;
 }

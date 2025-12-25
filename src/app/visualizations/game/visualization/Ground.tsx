@@ -1,5 +1,5 @@
 export const getGroundY = `
-  float getGroundY(float x, float aspectRatio, sampler2D data, vec2 volumeDataSize, float factor) {
+  float getGroundY(float x, float aspectRatio, sampler2D data, vec2 volumeDataSize) {
     float leftEdge = -0.5 * aspectRatio;
     float rightEdge = 0.5 * aspectRatio;
     float totalWidth = rightEdge - leftEdge;
@@ -9,8 +9,8 @@ export const getGroundY = `
     float i0 = floor(sampleIdx);
     float i1 = min(i0 + 1.0, float(volumeCount - 1));
     float f = fract(sampleIdx);
-    float data0 = texture2D(data, vec2(i0 / float(volumeCount), 0.5)).r * factor;
-    float data1 = texture2D(data, vec2(i1 / float(volumeCount), 0.5)).r * factor;
+    float data0 = texture2D(data, vec2(i0 / float(volumeCount), 0.)).r;
+    float data1 = texture2D(data, vec2(i1 / float(volumeCount), 0.)).r;
     float volume = mix(data0, data1, f);
     return volume;
   }
