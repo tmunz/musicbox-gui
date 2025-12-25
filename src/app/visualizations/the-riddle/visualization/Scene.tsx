@@ -18,13 +18,15 @@ export interface SceneProps {
 
 export const Scene = ({ sampleProvider, width, height, volumeFactor = 0.5 }: SceneProps) => {
   const [sampleTexture, updateSampleTexture] = useSampleProviderTexture(sampleProvider);
-  const [volumeTexture, updateVolumeTexture] = useSampleProviderTexture(
+  const [groundTexture, updateGroundTexture] = useSampleProviderTexture(
     sampleProvider,
     (sp) => {
       if (!sp) return new Uint8Array();
-      return Uint8Array.from(sp.samples.map((sample: Uint8Array) => {
+      // Inverted direction: newest value at the end, oldest first
+      const arr = sp.samples.map((sample: Uint8Array) => {
         return Array.from(sample).reduce((sum: number, val: number) => sum + val, 0) / sample.length * (1.0 * volumeFactor);
-      }));
+      });
+      return Uint8Array.from(arr.reverse());
     },
     (sp) => sp?.samples.length ?? 0,
     () => 1
@@ -34,13 +36,13 @@ export const Scene = ({ sampleProvider, width, height, volumeFactor = 0.5 }: Sce
   const elapsed = useElapsed(active);
 
   const getUniforms = (rootState: RootState): Record<string, IUniform> => {
-    updateVolumeTexture();
+    updateGroundTexture();
     return {
       time: { value: elapsed },
       aspectRatio: { value: (width as number) / (height as number) },
       volumeFactor: { value: volumeFactor },
-      volumeData: { value: volumeTexture },
-      volumeDataSize: { value: { x: volumeTexture.image.width, y: volumeTexture.image.height } },
+      groundData: { value: groundTexture },
+      groundDataSize: { value: { x: groundTexture.image.width, y: groundTexture.image.height } },
       sampleData: { value: sampleProvider.samples }, // keep for later
       sampleDataSize: { value: { x: sampleProvider.samples.length, y: 1 } }, // keep for later
     };
@@ -58,23 +60,28 @@ export const Scene = ({ sampleProvider, width, height, volumeFactor = 0.5 }: Sce
         uniform float time;
         uniform float aspectRatio;
         uniform float volumeFactor;
-        uniform sampler2D volumeData;
-        uniform vec2 volumeDataSize;
+        uniform sampler2D groundData;
+        uniform vec2 groundDataSize;
+
+        vec4 lineColor = vec4(1.);
+        vec4 fillColor = vec4(0.0039, 0.6314, 0.0039, 1.0); // #01A101
         
         ${getGroundY}
         ${drawGround}
         ${drawActor}
 
         void main() {
-          vec2 uv = vec2((vUv.x - .5) * aspectRatio, vUv.y - 0.5 * (1. - volumeFactor));
-          vec4 actorColor = drawActor(uv, time, volumeData, volumeDataSize);
-          float groundY = getGroundY(uv.x, aspectRatio, volumeData, volumeDataSize);
-          if (uv.y < groundY - 0.003) {
-            actorColor.a = 0.0;
+          float yOffset = 0.5 * (1.0 - volumeFactor);
+          vec2 uv = vec2((vUv.x - .5) * aspectRatio, vUv.y);
+          vec2 groundUv = vec2((uv.x / aspectRatio) + 0.5, uv.y - yOffset);
+          float groundY = getGroundY(groundUv.x, groundData, groundDataSize);
+          vec4 actorColor = vec4(0.0);
+          if (uv.y + 0.003 >= groundY + yOffset) {
+            actorColor = drawActor(uv, time, lineColor, fillColor, groundUv, groundData, groundDataSize, yOffset, aspectRatio);
           }
           vec4 color = actorColor;
           if (actorColor.a == 0.0) {
-            color = drawGround(uv.y, groundY);
+            color = drawGround(groundUv, groundY, lineColor);
           }
           gl_FragColor = color;
         }

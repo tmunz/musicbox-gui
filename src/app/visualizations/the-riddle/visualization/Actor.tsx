@@ -1,6 +1,12 @@
 export const drawActor = `
   const float PI = 3.14159265359;
 
+  struct Shape {
+    vec2 pos;
+    float angle;
+    float sdf;
+  };
+
   float cross2d(vec2 a, vec2 b) {
     return a.x * b.y - a.y * b.x;
   }
@@ -86,7 +92,7 @@ export const drawActor = `
     return vec4(outColor, outAlpha);
   }
 
-  vec4 blendObject(vec4 current, float obj, float borderThickness, vec4 fillColor, vec3 borderColor, float mask) {
+  vec4 blendObject(vec4 current, float obj, float borderThickness, vec4 fillColor, vec4 borderColor, float mask) {
     float fill = step(obj, 0.0);
     if (fill > 0.0) {
       current = blendOver(fillColor * fill, current);
@@ -95,50 +101,64 @@ export const drawActor = `
       float border = smoothstep(borderThickness, borderThickness - 0.002, abs(obj));
       float maskedBorder = border * mask;
       if (maskedBorder > 0.0) {
-        current = blendOver(vec4(borderColor, maskedBorder), current);
+        current = blendOver(vec4(borderColor.rgb, maskedBorder), current);
       }
     }
     return current;
   }
 
-  vec2 getFootPosition(float phase) {
-    return vec2(sin(phase) * 0.075, 0.01 + max(0.0, sin(phase + PI / 2.0)) * 0.03);
+  float getGroundYAtX(float x, sampler2D groundData, vec2 groundDataSize, float yOffset, float aspectRatio) {
+    float xTex = (x / aspectRatio) + 0.5;
+    return getGroundY(xTex, groundData, groundDataSize) + yOffset;
   }
 
-  vec2 getBodyPosition(float phase) {
-    return vec2(0.0, 0.15 + sin(phase * 2.0) * 0.005);
+  Shape makeFoot(vec2 uv, float phase, sampler2D groundData, vec2 groundDataSize, float yOffset, float aspectRatio) {
+    Shape s;
+    s.pos = vec2(sin(phase) * 0.075, max(0.0, sin(-0.5 + phase + PI / 2.0) * .06));
+    float groundY = getGroundYAtX(s.pos.x, groundData, groundDataSize, yOffset, aspectRatio);
+    s.pos.y += groundY;
+    float angleOffset = (mod(phase, 2.0 * PI) < PI) ? 1.8 : 1.8 + PI;
+    s.angle = clamp(0.2 * sin(phase + angleOffset), 0.0, 0.3);
+    s.sdf = drawEllipse(uv, s.pos, vec2(0.03, 0.02), s.angle);
+    return s;
   }
 
-  vec2 getHeadPosition(float phase) {
-    return vec2(0.0, 0.25 + sin(phase * 2.0) * 0.0075);
+  Shape makeHead(vec2 uv, float phase, float y) {
+    Shape s;
+    s.pos = vec2(0.0, 0.55 + sin(phase * 2.0) * 0.0075);
+    s.pos.y = y;
+    s.angle = 0.0;
+    s.sdf = drawEllipse(uv, s.pos, vec2(0.045, 0.035), s.angle);
+    return s;
   }
 
-  vec4 drawActor(vec2 vUv, float time, sampler2D groundData, vec2 groundDataSize) {
-    int volumeCount = int(groundDataSize.x);
-    int centerIdx = volumeCount / 2;
-    float centerGround = texture2D(groundData, vec2(float(centerIdx) / float(volumeCount), 0.)).r;
-    float newestGround = texture2D(groundData, vec2(0., 0.)).r;
-    float focusY = newestGround - centerGround;
+  Shape makeBody(vec2 uv, float phase, float y, vec2 leftFootPos, vec2 rightFootPos, vec2 headPos) {
+    Shape s;
+    s.pos = vec2(0.0, 0.45 + sin(phase * 2.0) * 0.005);
+    s.pos.y = y;
+    s.angle = 0.0;
+    s.sdf = getBody(uv, s.pos, leftFootPos, rightFootPos, headPos);
+    return s;
+  }
+
+  vec4 drawActor(
+    vec2 uv, float time, vec4 lineColor, vec4 fillColor,
+    vec2 groundUv, sampler2D groundData, vec2 groundDataSize, float yOffset, float aspectRatio
+  ) {
     float speed = 600.0 / groundDataSize.x;
     float phase = 0.9 + time * speed;
-    vec4 fillColor = vec4(0., 1., 0., 1.);
-    vec3 borderColor = vec3(1.);
-    vec2 headPosition = getHeadPosition(phase);
-    vec2 leftFootPosition = getFootPosition(phase);
-    vec2 rightFootPosition = getFootPosition(phase + PI);
 
-    vec2 uv = vec2(vUv.x, vUv.y - centerGround);
-    float body = getBody(uv, getBodyPosition(phase), leftFootPosition, rightFootPosition, headPosition);
-    float leftFootAngle = clamp(0.2 * sin(phase + 1.8), -0., 0.3);
-    float rightFootAngle = clamp(0.2 * sin(phase + 1.8 + PI), -0., 0.3);
-    float head = drawEllipse(uv, headPosition, vec2(0.045, 0.035), -focusY);
-    float leftFoot = drawEllipse(uv, leftFootPosition, vec2(0.03, 0.02), leftFootAngle);
-    float rightFoot = drawEllipse(uv, rightFootPosition, vec2(0.03, 0.02), rightFootAngle);
+    float baseGroundY = getGroundYAtX(0.0, groundData, groundDataSize, yOffset, aspectRatio);
+    Shape leftFoot = makeFoot(uv, phase, groundData, groundDataSize, yOffset, aspectRatio);
+    Shape rightFoot = makeFoot(uv, phase + PI, groundData, groundDataSize, yOffset, aspectRatio);
+    Shape head = makeHead(uv, phase, baseGroundY + 0.22);
+    Shape body = makeBody(uv, phase, baseGroundY + 0.12, leftFoot.pos, rightFoot.pos, head.pos);
+
     vec4 color = vec4(0.0);
-    color = blendObject(color, body, 0.006, fillColor, borderColor, 1.0 - max(max(step(leftFoot, 0.0), step(rightFoot, 0.0)), step(head, 0.0)));
-    color = blendObject(color, leftFoot, 0.18, fillColor, borderColor, 1.0 - step(body, 0.0));
-    color = blendObject(color, head, 0.12, fillColor, borderColor, 1.0 - step(body, 0.0));
-    color = blendObject(color, rightFoot, 0.18, fillColor, borderColor, 1.0 - step(body, 0.0));
+    color = blendObject(color, body.sdf, 0.006, fillColor, lineColor, 1.0 - max(max(step(leftFoot.sdf, 0.0), step(rightFoot.sdf, 0.0)), step(head.sdf, 0.0)));
+    color = blendObject(color, leftFoot.sdf, 0.18, fillColor, lineColor, 1.0 - step(body.sdf, 0.0));
+    color = blendObject(color, head.sdf, 0.12, fillColor, lineColor, 1.0 - step(body.sdf, 0.0));
+    color = blendObject(color, rightFoot.sdf, 0.18, fillColor, lineColor, 1.0 - step(body.sdf, 0.0));
     return color;
   }
 `;
