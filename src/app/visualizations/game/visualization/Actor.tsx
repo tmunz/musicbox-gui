@@ -92,7 +92,7 @@ export const drawActor = `
       current = blendOver(fillColor * fill, current);
     }
     if (obj > 0.0) {
-      float border = smoothstep(borderThickness, borderThickness - 0.005, abs(obj));
+      float border = smoothstep(borderThickness, borderThickness - 0.002, abs(obj));
       float maskedBorder = border * mask;
       if (maskedBorder > 0.0) {
         current = blendOver(vec4(borderColor, maskedBorder), current);
@@ -113,23 +113,19 @@ export const drawActor = `
     return vec2(0.0, 0.25 + sin(phase * 2.0) * 0.0075);
   }
 
-  vec4 drawActor(vec2 uv, float time, float speed) {
-    if (uv.y < -0.002) {
-      return vec4(0.0);
-    }
+  vec4 drawActor(vec2 uv, float time, float speed, float focusY) {
     float phase = time * speed;
     float borderThicknessEllipse = 0.12;
-    float borderThicknessBody = 0.008;
+    float borderThicknessBody = 0.006;
     vec4 fillColor = vec4(0., 1., 0., 1.);
     vec3 borderColor = vec3(1.);
     vec2 headPosition = getHeadPosition(phase);
     vec2 leftFootPosition = getFootPosition(phase);
     vec2 rightFootPosition = getFootPosition(phase + PI);
     float body = getBody(uv, getBodyPosition(phase), leftFootPosition, rightFootPosition, headPosition);
-    float headAngle = 0.2 * sin(phase / 2.);
     float leftFootAngle = clamp(0.2 * sin(phase + 1.8), -0., 0.3);
     float rightFootAngle = clamp(0.2 * sin(phase + 1.8 + PI), -0., 0.3);
-    float head = drawEllipse(uv, headPosition, vec2(0.045, 0.035), headAngle);
+    float head = drawEllipse(uv, headPosition, vec2(0.045, 0.035), -focusY);
     float leftFoot = drawEllipse(uv, leftFootPosition, vec2(0.04, 0.03), leftFootAngle);
     float rightFoot = drawEllipse(uv, rightFootPosition, vec2(0.04, 0.03), rightFootAngle);
     vec4 color = vec4(0.0);

@@ -12,7 +12,7 @@ const game: Visualization = {
   component: Game,
   color: '#00ff00',
   settings: {
-    samples: createSampleSettings(32, 32),
+    samples: createSampleSettings(32, 64),
   }
 };
 

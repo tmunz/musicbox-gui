@@ -3,17 +3,18 @@ import { IUniform } from 'three';
 import { RootState } from '@react-three/fiber';
 import { SampleProvider } from '../../../audio/SampleProvider';
 import { ShaderImage } from '../../../ui/shader-image/ShaderImage';
-import { drawActor } from './drawActor';
+import { drawActor } from './Actor';
+import { drawGround, getGroundY } from './Ground';
 import { useSampleProviderTexture } from '../../../audio/useSampleProviderTexture';
 
-export interface GameVisualizationProps {
+export interface SceneProps {
   sampleProvider: SampleProvider;
   width: number;
   height: number;
   speed?: number;
 }
 
-export const GameVisualization = ({ sampleProvider, width, height, speed = 8.0 }: GameVisualizationProps) => {
+export const Scene = ({ sampleProvider, width, height }: SceneProps) => {
   const startTimeRef = useRef<number>(Date.now());
   const [sampleTexture, updateSampleTexture] = useSampleProviderTexture(sampleProvider);
 
@@ -35,7 +36,6 @@ export const GameVisualization = ({ sampleProvider, width, height, speed = 8.0 }
     return {
       time: { value: elapsed },
       aspectRatio: { value: (width as number) / (height as number) },
-      speed: { value: speed },
       volumeData: { value: volumeTexture },
       volumeDataSize: { value: { x: volumeTexture.image.width, y: volumeTexture.image.height } },
       sampleData: { value: sampleProvider.samples }, // keep for later
@@ -62,7 +62,6 @@ export const GameVisualization = ({ sampleProvider, width, height, speed = 8.0 }
         varying vec2 vUv;
         uniform float time;
         uniform float aspectRatio;
-        uniform float speed;
         uniform sampler2D volumeData;
         uniform vec2 volumeDataSize;
 
@@ -70,25 +69,30 @@ export const GameVisualization = ({ sampleProvider, width, height, speed = 8.0 }
           return length(p) - r;
         }
         
+        ${getGroundY}
+        ${drawGround}
         ${drawActor}
-        
+
         void main() {
-          vec2 uv = vUv - 0.5;
-          uv.x *= aspectRatio;
-          float leftEdge = -0.5 * aspectRatio;
-          float rightEdge = 0.5 * aspectRatio;
-          float totalWidth = rightEdge - leftEdge;
+          vec2 uv = vec2((vUv.x - .5) * aspectRatio, vUv.y - 0.25);
+          float groundFactor = .5;
+          float groundY = getGroundY(uv.x, aspectRatio, volumeData, volumeDataSize, groundFactor);
+
           int volumeCount = int(volumeDataSize.x);
-          float t = clamp((rightEdge - uv.x) / totalWidth, 0.0, 1.0);
-          float sampleIdx = t * float(volumeCount - 1);
-          float volume = texture2D(volumeData, vec2(sampleIdx / float(volumeCount), 0.5)).r * 0.2;
-          float circle = smoothstep(0.005, 0.0, abs(uv.y - volume));
-          vec4 color = vec4(1., 1., 1., 0.);
-          if (circle > 0.0) {
-            color = vec4(1.0, 1.0, 1.0, circle);
+          int centerIdx = volumeCount / 2;
+          float centerVolume = texture2D(volumeData, vec2(float(centerIdx) / float(volumeCount), 0.)).r;
+          float newestVolume = texture2D(volumeData, vec2(0., 0.)).r;
+          vec2 actorUv = uv;
+          actorUv.y -= centerVolume * groundFactor;
+
+          vec4 actorColor = drawActor(actorUv, time, 600. / volumeDataSize.x, newestVolume - centerVolume);
+          if (uv.y < groundY - 0.003) {
+            actorColor.a = 0.0;
           }
-          vec4 actorColor = drawActor(uv, time, speed);
-          color = mix(color, actorColor, actorColor.a);
+          vec4 color = actorColor;
+          if (actorColor.a == 0.0) {
+            color = drawGround(uv.y, groundY);
+          }
           gl_FragColor = color;
         }
       `}

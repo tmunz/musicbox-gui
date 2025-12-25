@@ -1,6 +1,6 @@
 import React from 'react';
 import { SampleProvider } from '../../../audio/SampleProvider';
-import { GameVisualization } from './GameVisualization';
+import { Scene } from './Scene';
 
 export interface GameProps {
   sampleProvider: SampleProvider;
@@ -11,7 +11,7 @@ export const Game = ({ sampleProvider, canvas }: GameProps) => {
   const sizeRatio = 1.0;
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-      <GameVisualization 
+      <Scene 
         width={canvas.width * sizeRatio}
         height={canvas.height * sizeRatio}
         sampleProvider={sampleProvider}
