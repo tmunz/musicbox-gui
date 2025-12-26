@@ -20,7 +20,7 @@ export const drawActor = `
     return length(p - pt);
   }
 
-  float sdfPolygon(vec2 p, vec2 points[6], mediump float bendFactors[6]) {
+  float sdfPolygon(vec2 p, vec2 points[6], vec2 bendFactors[6]) {
     float minDist = 1e10;
     float winding = 0.0;
     int N = 6;
@@ -31,7 +31,7 @@ export const drawActor = `
       vec2 e = b - a;
       vec2 mid = (a + b) * 0.5;
       vec2 perp = normalize(vec2(-e.y, e.x));
-      vec2 c = mid + perp * bendFactors[i] * length(e);
+      vec2 c = mid + perp * bendFactors[i].x * length(e);
       float dist = sdfQuadraticBezier(p, a, c, b);
       if (dist < minDist) minDist = dist;
       vec2 prev = a;
@@ -104,7 +104,13 @@ export const drawActor = `
     points[3] = mix(higherFoot, position, 1. - footDistanceFactor);
     points[4] = mix(higherFoot - perpHigher * 2. * footThickness, position, 1. - footDistanceFactor);
     points[5] = mix(lowerFoot, position, 1. - footDistanceFactor);
-    float bendFactors[6] = float[](-0.25, -0.1, 2. * higherFoot.x, -0.1, -0.3, -0.1);
+    vec2 bendFactors[6];
+    bendFactors[0] = vec2(-0.25, 0.0);
+    bendFactors[1] = vec2(-0.1, 0.0);
+    bendFactors[2] = vec2(2. * higherFoot.x, 0.0);
+    bendFactors[3] = vec2(-0.1, 0.0);
+    bendFactors[4] = vec2(-0.3, 0.0);
+    bendFactors[5] = vec2(-0.1, 0.0);
     return sdfPolygon(uv, points, bendFactors);
   }
 
