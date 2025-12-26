@@ -108,17 +108,20 @@ export const drawActor = `
     return sdfPolygon(uv, points, bendFactors);
   }
 
-  Shape makeFoot(vec2 uv, float phase, sampler2D groundData, vec2 groundDataSize, float yOffset, float aspectRatio) {
-    Shape s;
-    float groundY = getGroundYAtX(s.pos.x, groundData, groundDataSize, yOffset, aspectRatio);
-    float angleOffset = (mod(phase, 2.0 * PI) < PI) ? 1.8 : 1.8 + PI;
-
+  vec2 getFootGroundPosition(float phase, sampler2D groundData, vec2 groundDataSize, float yOffset, float aspectRatio) {
     float x = sin(phase) * 0.075;
+    float groundY = getGroundYAtX(x, groundData, groundDataSize, yOffset, aspectRatio);
+    return vec2(x, groundY);
+  }
+
+  Shape makeFoot(vec2 uv, vec2 groundPos, float phase) {
+    Shape s;
+    float angleOffset = (mod(phase, 2.0 * PI) < PI) ? 1.8 : 1.8 + PI;
     float yArch = sin(-0.5 + phase + PI / 2.0);
-    if (x > 0.0) {
+    if (groundPos.x > 0.0) {
       yArch = pow(yArch, 1.5) * 1.7;
     }
-    s.pos = vec2(x, max(0.0, yArch * 0.06) + groundY);
+    s.pos = vec2(groundPos.x, max(0.0, yArch * 0.06) + groundPos.y);
     s.angle = clamp(-0.9 * sin(phase + angleOffset), -1.0, 0.0);
     s.sdf = sdfEllipse(uv - s.pos, vec2(0.03, 0.02), s.angle);
     return s;
@@ -147,17 +150,20 @@ export const drawActor = `
   }
 
   float makeHair(vec2 uv, Shape head, vec4 lineColor, vec4 color) {
-    float angle = head.angle + PI / 4.0;
+    float angle = head.angle + 0.6;
     vec2 dir = vec2(sin(angle), cos(angle));
-    vec2 hairStart = head.pos + dir * 0.04;
-    float hairLength = 0.022;
+    float hairLength = 0.025;
+    vec2 hairStart = head.pos + dir * 0.042;
     float t = clamp(dot(uv - hairStart, dir) / hairLength, 0.0, 1.0);
-    float curveAmount = 0.01 * t * (1.0 - t);
-    float headXInfluence = -head.pos.x * 0.1 * t;
-    vec2 hairCurve = hairStart + dir * hairLength * t + vec2(curveAmount + headXInfluence, 0.0);
+    float curveAmount = -0.01 * t * (1.0 - t);
+    vec2 perp = vec2(-dir.y, dir.x);
+    float beat = head.pos.x * 20.;
+    vec2 hairCurve = hairStart + dir * hairLength * t + perp * curveAmount * beat;
     float hairDist = length(uv - hairCurve);
-    float hairAlpha = smoothstep(0.004, 0.0025 - 0.0005, hairDist); // Loosen threshold
-    return hairAlpha;
+    float baseWidth = 0.003;
+    float tipWidth = 0.002;
+    float width = mix(baseWidth, tipWidth, t);
+    return smoothstep(width, width * 0.7, hairDist);
   }
 
   vec4 drawActor(
@@ -166,12 +172,14 @@ export const drawActor = `
   ) {
     float speed = 460.0 * aspectRatio / groundDataSize.x;
     float phase = 0.9 + time * speed;
-    float baseGroundY = getGroundYAtX(0.0, groundData, groundDataSize, yOffset, aspectRatio);
     float mainValue = getGroundYAtX(aspectRatio * (1.0 - 0.5), groundData, groundDataSize, yOffset, aspectRatio);
-    Shape leftFoot = makeFoot(uv, phase, groundData, groundDataSize, yOffset, aspectRatio);
-    Shape rightFoot = makeFoot(uv, phase + PI, groundData, groundDataSize, yOffset, aspectRatio);
-    Shape head = makeHead(uv, phase, baseGroundY + 0.22, baseGroundY - mainValue, (currentVolume - minVolume) / (maxVolume - minVolume));
-    Shape body = makeBody(uv, phase, baseGroundY + 0.12, leftFoot.pos, rightFoot.pos, head.pos);
+    vec2 leftFootGround = getFootGroundPosition(phase, groundData, groundDataSize, yOffset, aspectRatio);
+    vec2 rightFootGround = getFootGroundPosition(phase + PI, groundData, groundDataSize, yOffset, aspectRatio);
+    vec2 baseGround = (leftFootGround + rightFootGround) * 0.5;
+    Shape leftFoot = makeFoot(uv, leftFootGround, phase);
+    Shape rightFoot = makeFoot(uv, rightFootGround, phase + PI);
+    Shape head = makeHead(uv, phase, baseGround.y + 0.22, baseGround.y - mainValue, (currentVolume - minVolume) / (maxVolume - minVolume));
+    Shape body = makeBody(uv, phase, baseGround.y + 0.12, leftFoot.pos, rightFoot.pos, head.pos);
     vec4 color = vec4(0.0);
     color = blendObject(color, body.sdf, 0.006, fillColor, lineColor, 1.0 - max(max(step(leftFoot.sdf, 0.0), step(rightFoot.sdf, 0.0)), step(head.sdf, 0.0)));
     color = blendObject(color, leftFoot.sdf, 0.18, fillColor, lineColor, 1.0 - step(body.sdf, 0.0));
