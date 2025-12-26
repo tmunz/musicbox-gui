@@ -22,12 +22,10 @@ export default [
   crises,
   pushTheSkyAway,
   santigold,
+  velvetUnderground,
   minorEarthMajorSky,
-
-  // vivaLaVida,
-  // velvetUnderground,
-
   theRiddle,
+  // vivaLaVida,
 ];
 
 // Kraftwerk
@@ -38,6 +36,5 @@ export default [
 // Led Zeppelin - Led Zeppelin
 // Placebo - Battle for the Sun
 // The Beatles - Abbey Road
-// King Crimson - Beat
 // T. Rex - Electric Warrior
 // David Bowie - Aladdin Sane

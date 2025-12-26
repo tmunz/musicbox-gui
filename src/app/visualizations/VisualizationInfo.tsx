@@ -1,5 +1,4 @@
 import './VisualizationInfo.css';
-import React from 'react';
 import { Visualization } from './Visualization';
 
 interface VisualizationInfoProps {

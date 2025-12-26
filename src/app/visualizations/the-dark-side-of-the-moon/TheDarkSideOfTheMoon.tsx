@@ -35,6 +35,8 @@ const Scene = ({
   maxBounces = 10,
   deflection = 36,
 }: TheDarkSideOfTheMoonProps) => {
+  const MIN_DISTANCE = 1;
+
   const [initialState, setInitialState] = useState(true);
   const beamRef = useRef<BeamApi | null>(null);
   const { current: start } = useRef(new Vector3(0, 0, 0));
@@ -45,21 +47,18 @@ const Scene = ({
     const initialAngleRads = 0.25;
     const x = target.x - viewport.width / 2;
     const defaultStart: [number, number, number] = [x, target.y + x * Math.tan(initialAngleRads), 0];
+
     if (sampleProvider) {
       if (sampleProvider.active) {
-        const minDistance = 1;
         const indicatorValue = (sampleProvider.getAvg()[0] / 255) * volumeAmountIndicator + 1 - volumeAmountIndicator;
-        const directionVector = new Vector2(
-          (pointer.x * viewport.width) / 2 - target.x,
-          (pointer.y * viewport.height) / 2 - target.y
-        );
-        const totalDistance = directionVector.length();
-        const direction = directionVector.normalize();
-        const remainingDistance = totalDistance - minDistance;
-        const adjustedDistance = minDistance + remainingDistance * indicatorValue;
+        const pointerX = (pointer.x * viewport.width) / 2;
+        const pointerY = (pointer.y * viewport.height) / 2;
+        const adjustedPointerPosition = calculateAdjustedPosition(pointerX, pointerY, indicatorValue);
+        const adjustedDefaultStart = calculateAdjustedPosition(defaultStart[0], defaultStart[1], indicatorValue);
+
         return [
-          (1 - pointerSensitivity) * defaultStart[0] + pointerSensitivity * (target.x + direction.x * adjustedDistance),
-          (1 - pointerSensitivity) * defaultStart[1] + pointerSensitivity * (target.y + direction.y * adjustedDistance),
+          (1 - pointerSensitivity) * adjustedDefaultStart[0] + pointerSensitivity * adjustedPointerPosition[0],
+          (1 - pointerSensitivity) * adjustedDefaultStart[1] + pointerSensitivity * adjustedPointerPosition[1],
           0,
         ];
       }
@@ -72,6 +71,21 @@ const Scene = ({
       }
     }
     return defaultStart;
+  };
+
+  const calculateAdjustedPosition = (x: number, y: number, indicatorValue: number): [number, number] => {
+    const relativeX = x - target.x;
+    const relativeY = y - target.y;
+    const distance = Math.sqrt(relativeX * relativeX + relativeY * relativeY);
+
+    if (distance === 0) return [x, y];
+
+    const directionX = relativeX / distance;
+    const directionY = relativeY / distance;
+    const remainingDistance = distance - MIN_DISTANCE;
+    const adjustedDistance = MIN_DISTANCE + remainingDistance * indicatorValue;
+
+    return [target.x + directionX * adjustedDistance, target.y + directionY * adjustedDistance];
   };
 
   useFrame(({ pointer, viewport }) => {

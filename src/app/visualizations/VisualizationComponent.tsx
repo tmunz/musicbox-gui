@@ -1,5 +1,4 @@
 import './VisualizationComponent.css';
-import React from 'react';
 import { Visualization } from './Visualization';
 import { SampleProvider } from '../audio/SampleProvider';
 import { useFade } from '../utils/useFade';

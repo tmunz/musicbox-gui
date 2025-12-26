@@ -13,13 +13,22 @@ export const Menubar = ({ hideTimeout, children }: MenubarProps) => {
 
   return (
     <div className={`menubar ${visible ? 'visible' : 'hidden'}`}>
-      {React.Children.map(children, (child, index) =>
-        React.isValidElement(child)
-          ? React.cloneElement(child as React.ReactElement<any>, {
-              ref: (el: MenubarItemRef | null) => (childRefs.current[index] = el),
-            })
-          : child
-      )}
+      {React.Children.map(children, (child, index) => {
+        if (!React.isValidElement(child)) return child;
+
+        const childType = child.type as any;
+        const canReceiveRef =
+          typeof childType === 'function' &&
+          (childType.$$typeof === Symbol.for('react.forward_ref') || childType.prototype?.isReactComponent);
+
+        if (canReceiveRef) {
+          return React.cloneElement(child as React.ReactElement<any>, {
+            ref: (el: MenubarItemRef | null) => (childRefs.current[index] = el),
+          });
+        }
+
+        return child;
+      })}
     </div>
   );
 };

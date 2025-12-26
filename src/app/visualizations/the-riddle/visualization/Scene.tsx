@@ -16,16 +16,11 @@ export interface SceneProps {
 }
 
 export const Scene = ({ sampleProvider, width, height, volumeFactor = 0.5 }: SceneProps) => {
-  const [sampleTexture, updateSampleTexture] = useSampleProviderTexture(sampleProvider);
+  // Inverted direction and flipped: newest value to the right, oldest left
   const [volumeTexture, updateVolumeTexture] = useSampleProviderTexture(
     sampleProvider,
     sp => {
-      if (!sp) return new Uint8Array();
-      // Inverted direction: newest value at the end, oldest first
-      const arr = sp.samples.map((sample: Uint8Array) => {
-        return Array.from(sample).reduce((sum: number, val: number) => sum + val, 0) / sample.length;
-      });
-      return Uint8Array.from(arr.reverse());
+      return new Uint8Array(sp ? sp.getAvg().reverse() : []);
     },
     sp => sp?.samples.length ?? 0,
     () => 1
@@ -59,8 +54,6 @@ export const Scene = ({ sampleProvider, width, height, volumeFactor = 0.5 }: Sce
       volumeFactor: { value: volumeFactor },
       groundData: { value: groundTexture },
       groundDataSize: { value: { x: groundTexture.image.width, y: groundTexture.image.height } },
-      sampleData: { value: sampleProvider.samples }, // keep for later
-      sampleDataSize: { value: { x: sampleProvider.samples.length, y: 1 } }, // keep for later
       minVolume: { value: minVolume / 255.0 },
       maxVolume: { value: maxVolume / 255.0 },
       currentVolume: {

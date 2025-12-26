@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { EffectComposer, DepthOfField } from '@react-three/postprocessing';
 import { BlendFunction } from 'postprocessing';
@@ -33,14 +33,14 @@ export const Bananas = ({ sampleProvider, depth = 20 }: { sampleProvider: Sample
       />
       <OrbitControls enabled={false} />
       <color attach="background" args={['#fffffa']} />
-      <Scene sampleProvider={sampleProvider} bananaPeeled={bananaPeeled} />
+      <Scene bananaPeeled={bananaPeeled} />
       <EffectComposer enableNormalPass={false} multisampling={0}>
         <DepthOfField
           target={[0, 0, 0]}
           focusDistance={
             (cameraRef.current?.position.z ?? 10) / ((cameraRef.current?.far ?? 100) - (cameraRef.current?.near ?? 0.1))
           }
-          focusRange={0.1}
+          focusRange={1.5}
           focalLength={0.1}
           bokehScale={10}
           blendFunction={BlendFunction.NORMAL}
@@ -50,21 +50,8 @@ export const Bananas = ({ sampleProvider, depth = 20 }: { sampleProvider: Sample
   );
 };
 
-const Scene = ({
-  sampleProvider,
-  bananaPeeled = false,
-}: {
-  sampleProvider?: SampleProvider;
-  bananaPeeled?: boolean;
-}) => {
+const Scene = ({ bananaPeeled = false }: { bananaPeeled?: boolean }) => {
   const bananaRef = useRef<Group>(null);
-
-  useFrame(() => {
-    if (sampleProvider?.active && bananaRef.current) {
-      const avg = sampleProvider.getAvg()[0];
-      bananaRef.current.position.set(0, (-1 + avg / 255) * 0.1, 0); // TODO improve dummy visualisation
-    }
-  });
 
   return (
     <>
