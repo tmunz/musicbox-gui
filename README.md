@@ -1,5 +1,5 @@
-# Musicbox-GUI
-**[Try it yourself](https://tmunz.github.io/musicbox-gui/)**
+# TMusic (Musicbox-GUI)
+**[Try it yourself](https://tmunz.github.io/tmusic/)**
 
 ## Development notes
 
