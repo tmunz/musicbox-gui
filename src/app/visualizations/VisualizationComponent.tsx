@@ -12,11 +12,16 @@ interface VisualizationComponentProps {
   isActive: boolean;
 }
 
-export const VisualizationComponent = ({ visualization, sampleProvider, canvas, isActive }: VisualizationComponentProps) => {
+export const VisualizationComponent = ({
+  visualization,
+  sampleProvider,
+  canvas,
+  isActive,
+}: VisualizationComponentProps) => {
   const { visible, fadeStyle } = useFade(isActive, CAROUSEL_TRANSITION_DURATION_MS * 1);
 
   return (
-    <div className='visualization-component' style={{ backgroundColor: visualization?.color }}>
+    <div className="visualization-component" style={{ backgroundColor: visualization?.color }}>
       <div style={fadeStyle}>
         {visualization && visible && (
           <visualization.component

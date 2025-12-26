@@ -1,4 +1,3 @@
-import React from 'react';
 import { IUniform } from 'three';
 import { RootState } from '@react-three/fiber';
 import { SampleProvider } from '../../../audio/SampleProvider';
@@ -20,7 +19,7 @@ export const Scene = ({ sampleProvider, width, height, volumeFactor = 0.5 }: Sce
   const [sampleTexture, updateSampleTexture] = useSampleProviderTexture(sampleProvider);
   const [volumeTexture, updateVolumeTexture] = useSampleProviderTexture(
     sampleProvider,
-    (sp) => {
+    sp => {
       if (!sp) return new Uint8Array();
       // Inverted direction: newest value at the end, oldest first
       const arr = sp.samples.map((sample: Uint8Array) => {
@@ -28,13 +27,12 @@ export const Scene = ({ sampleProvider, width, height, volumeFactor = 0.5 }: Sce
       });
       return Uint8Array.from(arr.reverse());
     },
-    (sp) => sp?.samples.length ?? 0,
+    sp => sp?.samples.length ?? 0,
     () => 1
   );
 
   const active = useSampleProviderActive(sampleProvider);
   const elapsed = useElapsed(active);
-
 
   const getUniforms = (rootState: RootState): Record<string, IUniform> => {
     updateVolumeTexture();
@@ -65,7 +63,9 @@ export const Scene = ({ sampleProvider, width, height, volumeFactor = 0.5 }: Sce
       sampleDataSize: { value: { x: sampleProvider.samples.length, y: 1 } }, // keep for later
       minVolume: { value: minVolume / 255.0 },
       maxVolume: { value: maxVolume / 255.0 },
-      currentVolume: { value: volumeArray.length > 0 ? volumeArray[volumeArray.length - 1] / 255.0 : 0 },
+      currentVolume: {
+        value: volumeArray.length > 0 ? volumeArray[volumeArray.length - 1] / 255.0 : 0,
+      },
     };
   };
 

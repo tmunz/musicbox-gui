@@ -1,11 +1,13 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { GroupProps, useLoader } from '@react-three/fiber';
 import { GLTFLoader } from 'three-stdlib';
 import { BufferGeometry, DoubleSide, Mesh } from 'three';
 import { MeshTransmissionMaterial } from '@react-three/drei';
 
 export const Prism = forwardRef<Mesh, GroupProps>((props, ref) => {
-  const file = useLoader(GLTFLoader, require('../assets/prism.glb')) as unknown as { nodes: { Cone: { geometry: BufferGeometry } } };
+  const file = useLoader(GLTFLoader, require('../assets/prism.glb')) as unknown as {
+    nodes: { Cone: { geometry: BufferGeometry } };
+  };
 
   return (
     <group {...props}>

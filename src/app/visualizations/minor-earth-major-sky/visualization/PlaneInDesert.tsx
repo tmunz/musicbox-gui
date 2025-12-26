@@ -1,9 +1,9 @@
-import React, { useRef } from "react";
-import { SampleProvider } from "../../../audio/SampleProvider";
-import { useSampleProviderTexture } from "../../../audio/useSampleProviderTexture";
-import { ShaderImage } from "../../../ui/shader-image/ShaderImage";
-import { LinearFilter } from "three";
-import { gaussianBlur } from "../../../utils/ShaderUtils";
+import { useRef } from 'react';
+import { SampleProvider } from '../../../audio/SampleProvider';
+import { useSampleProviderTexture } from '../../../audio/useSampleProviderTexture';
+import { ShaderImage } from '../../../ui/shader-image/ShaderImage';
+import { LinearFilter } from 'three';
+import { gaussianBlur } from '../../../utils/ShaderUtils';
 
 export interface PlaneInDesertProps {
   width: number;
@@ -13,7 +13,6 @@ export interface PlaneInDesertProps {
 }
 
 export const PlaneInDesert = ({ sampleProvider, width, height, intensity = 1 }: PlaneInDesertProps) => {
-
   const [sampleTexture, updateSampleTexture] = useSampleProviderTexture(sampleProvider);
 
   const { current: imageUrls } = useRef({
@@ -26,17 +25,18 @@ export const PlaneInDesert = ({ sampleProvider, width, height, intensity = 1 }: 
       sampleData: { value: sampleTexture },
       sampleDataSize: { value: { x: sampleTexture.image.width, y: sampleTexture.image.height } },
       intensity: { value: intensity },
-    }
+    };
   };
 
-  return <ShaderImage
-    imageUrls={imageUrls}
-    objectFit='cover'
-    width={width}
-    height={height}
-    getUniforms={getUniforms}
-    imageFilter={LinearFilter}
-    fragmentShader={`
+  return (
+    <ShaderImage
+      imageUrls={imageUrls}
+      objectFit="cover"
+      width={width}
+      height={height}
+      getUniforms={getUniforms}
+      imageFilter={LinearFilter}
+      fragmentShader={`
       precision mediump float;
       varying vec2 vUv;
 
@@ -55,7 +55,7 @@ export const PlaneInDesert = ({ sampleProvider, width, height, intensity = 1 }: 
         vec4 valueColor = vec4(.857, .794, .565, intensity) * sampleValue;
         color.rgb = mix(color.rgb, valueColor.rgb, clamp(valueColor.a, 0., 1.));
         gl_FragColor = color;
-      }`
-    }
-  />
+      }`}
+    />
+  );
 };

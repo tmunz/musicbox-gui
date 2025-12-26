@@ -1,10 +1,8 @@
 import './IconButton.css';
-import React, { ButtonHTMLAttributes, DetailedHTMLProps } from 'react';
+import { ButtonHTMLAttributes, DetailedHTMLProps } from 'react';
 
-interface IconButtonProps extends DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> { }
+type IconButtonProps = DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>;
 
 export const IconButton = (props: IconButtonProps) => {
-  return (
-    <button {...props} className={`icon-button ${props.className ?? ''}`} />
-  );
-}
+  return <button {...props} className={`icon-button ${props.className ?? ''}`} />;
+};

@@ -1,30 +1,39 @@
-import { SampleProvider } from "../../../audio/SampleProvider";
+import { SampleProvider } from '../../../audio/SampleProvider';
 
-export type PulsarData = { value: number, sampleIndex: number };
+export type PulsarData = { value: number; sampleIndex: number };
 
-export function convertPulsarData (sampleProvider?: SampleProvider) {
+export function convertPulsarData(sampleProvider?: SampleProvider): Uint8Array {
   if (!sampleProvider) return new Uint8Array();
   const result = new Uint8Array(sampleProvider.sampleSize * sampleProvider.frequencyBands);
   for (let i = 0; i < sampleProvider.frequencyBands; i++) {
-    const frequency: PulsarData[] = sampleProvider.samples.map((sample, sampleIndex) => ({ value: sample[i], sampleIndex }));
+    const frequency: PulsarData[] = sampleProvider.samples.map((sample, sampleIndex) => ({
+      value: sample[i],
+      sampleIndex,
+    }));
     const sortedFrequency: PulsarData[] = [...frequency].sort((a, b) => b.value - a.value);
     const max = sortedFrequency[0].value;
     const min = sortedFrequency[sortedFrequency.length - 1].value;
     const relativeOffCenter = 0.25 + 0.5 * (max / 255);
     const resultFrequency = rearrange(sortedFrequency, relativeOffCenter);
     for (let j = 0; j < sampleProvider.sampleSize; j++) {
-      const normalized = (resultFrequency[j].value - min) / Math.max((max - min), 1); // increase difference by moving baseline to min
-      const sampleRelevance = calculateRelevance(resultFrequency[j].sampleIndex, sampleProvider.sampleSize, Math.min(6, sampleProvider.sampleSize)); // rise to peak position and fall afterwards
+      const normalized = (resultFrequency[j].value - min) / Math.max(max - min, 1); // increase difference by moving baseline to min
+      const sampleRelevance = calculateRelevance(
+        resultFrequency[j].sampleIndex,
+        sampleProvider.sampleSize,
+        Math.min(6, sampleProvider.sampleSize)
+      ); // rise to peak position and fall afterwards
       const sampleWeight = getWeight(j / sampleProvider.sampleSize); // fall off towards the edges
-      const frequencyWeight = max * Math.exp(normalized * 3) / Math.exp(3); // emphasize high values
-      result[j * sampleProvider.frequencyBands + i] = normalized * sampleRelevance * sampleWeight * frequencyWeight;
+      const frequencyWeight = (max * Math.exp(normalized * 3)) / Math.exp(3); // emphasize high values
+      const raw = normalized * sampleRelevance * sampleWeight * frequencyWeight;
+      const clamped = Math.min(255, Math.max(0, Math.round(raw)));
+      result[j * sampleProvider.frequencyBands + i] = clamped;
     }
   }
   return result;
 }
 
-function rearrange (arr: PulsarData[], relativeOffset = 0.5): PulsarData[] {
-  const centerSortedFrequency: PulsarData[] = [];
+function rearrange(arr: PulsarData[], relativeOffset = 0.5): PulsarData[] {
+  const centerSortedFrequency: PulsarData[] = new Array(arr.length);
   arr.forEach((e, j) => {
     const pos = Math.floor(arr.length * relativeOffset) + (j % 2 === 0 ? Math.floor(j / 2) : -Math.floor(j / 2) - 1);
     centerSortedFrequency[(arr.length + pos) % arr.length] = e;
@@ -32,8 +41,8 @@ function rearrange (arr: PulsarData[], relativeOffset = 0.5): PulsarData[] {
   return centerSortedFrequency;
 }
 
-function calculateRelevance(n: number, length: number, threshold: number) {
-  if (n < 0 || length < n) return 0;
+function calculateRelevance(n: number, length: number, threshold: number): number {
+  if (n < 0 || n >= length) return 0;
   const relativeX = n / length;
   const fallStart = threshold / length;
   if (relativeX <= fallStart) {
@@ -42,12 +51,12 @@ function calculateRelevance(n: number, length: number, threshold: number) {
   return Math.cos(((relativeX - fallStart) / (1 - fallStart)) * (Math.PI / 2));
 }
 
-function smoothstep(edge0: number, edge1: number, x: number) {
+function smoothstep(edge0: number, edge1: number, x: number): number {
   const t = Math.min(Math.max((x - edge0) / (edge1 - edge0), 0), 1);
   return t * t * (3.0 - 2.0 * t);
 }
 
-function getWeight(x: number) {
+function getWeight(x: number): number {
   const p = Math.min(x, 1 - x);
   return 0.1 * smoothstep(-0.3, 0.3, p) + smoothstep(0.25, 0.35, p);
 }

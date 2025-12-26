@@ -1,4 +1,4 @@
-import React, { createContext, useReducer, useContext, ReactNode, Dispatch } from 'react';
+import { createContext, useReducer, useContext, ReactNode, Dispatch } from 'react';
 import { Visualization } from './visualizations/Visualization';
 
 export interface AppState {
@@ -12,7 +12,12 @@ export enum VisualizationAction {
 
 type Action =
   | { type: VisualizationAction.SET_VISUALIZATION; visualization: Visualization | null }
-  | { type: VisualizationAction.UPDATE_VISUALIZATION_SETTINGS_VALUE; section: string; key: string; value: any };
+  | {
+      type: VisualizationAction.UPDATE_VISUALIZATION_SETTINGS_VALUE;
+      section: string;
+      key: string;
+      value: any;
+    };
 
 const appStateReducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
@@ -39,7 +44,7 @@ const appStateReducer = (state: AppState, action: Action): AppState => {
               },
             },
           },
-        }
+        },
       };
     default:
       return state;
@@ -51,11 +56,7 @@ const AppStateContext = createContext<{ appState: AppState; dispatch: Dispatch<A
 export const AppStateProvider = ({ children }: { children: ReactNode }) => {
   const [appState, dispatch] = useReducer(appStateReducer, { visualization: null });
 
-  return (
-    <AppStateContext.Provider value={{ appState, dispatch }}>
-      {children}
-    </AppStateContext.Provider>
-  );
+  return <AppStateContext.Provider value={{ appState, dispatch }}>{children}</AppStateContext.Provider>;
 };
 
 export const useAppState = () => {

@@ -1,4 +1,4 @@
-@import "assets/font/akzidenz-grotesk/stylesheet.css";
+@import 'assets/font/akzidenz-grotesk/stylesheet.css';
 
 body {
   font-family: 'Berthold Akzidenz Grotesk BE', sans-serif;
@@ -8,7 +8,12 @@ body {
   padding: 0;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin-bottom: 0;
   font-weight: 500;
 }

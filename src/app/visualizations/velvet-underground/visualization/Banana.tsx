@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { Suspense, useEffect, useRef } from 'react';
@@ -54,9 +54,7 @@ export const Banana = forwardRef<Group, { peeled: boolean }>(({ peeled }, ref) =
   return (
     <Suspense fallback={null}>
       <group ref={ref} scale={[0.6, 0.6, 0.6]}>
-        {file && (
-          <primitive object={file.scene} />
-        )}
+        {file && <primitive object={file.scene} />}
       </group>
     </Suspense>
   );

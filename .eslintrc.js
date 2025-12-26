@@ -1,4 +1,5 @@
 module.exports = {
+  root: true,
   env: {
     browser: true,
     commonjs: true,
@@ -6,6 +7,11 @@ module.exports = {
     node: true,
     es6: true,
     jest: true,
+  },
+  settings: {
+    react: {
+      version: 'detect'
+    }
   },
   extends: [
     'eslint:recommended',
@@ -21,6 +27,8 @@ module.exports = {
     },
     ecmaVersion: 'latest',
     sourceType: 'module',
+    project: './tsconfig.json',
+    extraFileExtensions: ['.ts', '.tsx']
   },
   plugins: [
     'react',
@@ -30,10 +38,15 @@ module.exports = {
   ],
   ignorePatterns: ['**/build/*.js', '**/node-modules/*'],
   rules: {
-    indent: ['error', 2],
+    'react/react-in-jsx-scope': 'off',
+    indent: 'off', // handled by Prettier
+    'brace-style': 'off', // handled by Prettier
     'eol-last': ['error', 'always'],
-    quotes: ['error', 'single'],
+    quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
     semi: ['error', 'always'],
     'no-explicit-any': 'off',
+    '@typescript-eslint/no-inferrable-types': 'off',
+    '@typescript-eslint/typedef': ['error', { 'parameter': true, 'propertyDeclaration': false, 'variableDeclaration': false, 'memberVariableDeclaration': false }],
+    '@typescript-eslint/no-unused-vars': ['warn', { 'argsIgnorePattern': '^_' }],
   },
-};
+ };

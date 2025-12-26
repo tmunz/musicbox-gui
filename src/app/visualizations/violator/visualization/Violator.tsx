@@ -1,10 +1,9 @@
-import React from 'react';
 import { Rose } from './Rose';
 import { SampleProvider } from '../../../audio/SampleProvider';
 
 export interface ViolatorProps {
   sampleProvider: SampleProvider;
-  canvas: { width: number, height: number };
+  canvas: { width: number; height: number };
 }
 
 export const Violator = ({ sampleProvider, canvas }: ViolatorProps) => {
@@ -14,4 +13,4 @@ export const Violator = ({ sampleProvider, canvas }: ViolatorProps) => {
       <Rose width={canvas.width * sizeRatio} height={canvas.height * sizeRatio} sampleProvider={sampleProvider} />
     </div>
   );
-}
+};

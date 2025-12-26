@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import { useRef } from 'react';
 import { ShaderImage } from '../../../ui/shader-image/ShaderImage';
 import { SampleProvider } from '../../../audio/SampleProvider';
 import { useSampleProviderTexture } from '../../../audio/useSampleProviderTexture';
@@ -11,7 +11,6 @@ export interface CatProps {
 }
 
 export const Cat = ({ width, height, sampleProvider }: CatProps) => {
-
   const [sampleTexture, updateSampleTexture] = useSampleProviderTexture(sampleProvider);
   const { current: imageUrls } = useRef({
     image: require('./karpatenhund_3_cat_full_orig.png'),
@@ -24,62 +23,64 @@ export const Cat = ({ width, height, sampleProvider }: CatProps) => {
       sampleData: { value: sampleTexture },
       sampleDataSize: { value: { x: sampleTexture.image.width, y: sampleTexture.image.height } },
       sampleDataAvg: { value: sampleProvider.getAvg()[0] / 255 },
-      samplesActive: { value: sampleProvider.active ? 1 : 0 }
-    }
+      samplesActive: { value: sampleProvider.active ? 1 : 0 },
+    };
   };
 
-  return <ShaderImage
-    imageUrls={imageUrls}
-    objectFit='contain'
-    width={width}
-    height={height}
-    getUniforms={getUniforms}
-    fragmentShader={`
-      precision mediump float;
+  return (
+    <ShaderImage
+      imageUrls={imageUrls}
+      objectFit="contain"
+      width={width}
+      height={height}
+      getUniforms={getUniforms}
+      fragmentShader={`
+        precision mediump float;
 
-      uniform sampler2D image;
-      uniform sampler2D imageFlat;
-      uniform sampler2D sampleData;
-      uniform vec2 sampleDataSize;
-      uniform float sampleDataAvg;
-      uniform int samplesActive;
-      in vec2 vUv;
+        uniform sampler2D image;
+        uniform sampler2D imageFlat;
+        uniform sampler2D sampleData;
+        uniform vec2 sampleDataSize;
+        uniform float sampleDataAvg;
+        uniform int samplesActive;
+        in vec2 vUv;
 
-      ${gaussianBlur}
+        ${gaussianBlur}
 
-      float _shapeFactor (float x) {
-        return 0.9 * (cos(12. * x) / 3.0 + .5) * (1. - x / 2.) + 0.1;
-      }
-
-      void main() {
-        vec4 color;
-        vec2 uv = vUv;
-
-        if (samplesActive == 0) {
-          color = texture(image, uv);
-        } else {
-          float baseY = 0.1;
-          float avgFactor = 0.1;
-          float dataX0 = 0.0;
-          float dataX1 = 1.0;
-          float dataY0 = 0.5;
-          float dataY1 = 0.8;
-          if (dataX0 <= uv.x && uv.x <= dataX1 && dataY0 <= uv.y) {
-            float dateWidth = dataX1 - dataX0;
-            float dataHeight = dataY1 - dataY0;
-            vec2 correctedUv = (uv - vec2(dataX0, dataY0)) / vec2(dateWidth, dataHeight);
-            vec4 sampleColor = gaussianBlur(sampleData, correctedUv, 1. / sampleDataSize.x, 25, sampleDataSize);
-            float factor = dataHeight;
-            uv.y -= sampleColor.r * factor * _shapeFactor(uv.x) * correctedUv.y;
-            // sampleColor.rgb = vec3(sampleColor.r);
-            // color = sampleColor;
-          }
-
-          uv.y -= sampleDataAvg * clamp(uv.y - baseY, 0., dataY0 - baseY) * avgFactor;
-          color = texture(imageFlat, uv);
+        float _shapeFactor (float x) {
+          return 0.9 * (cos(12. * x) / 3.0 + .5) * (1. - x / 2.) + 0.1;
         }
-        gl_FragColor = color;
-      }
-    `}
-  />;
-}
+
+        void main() {
+          vec4 color;
+          vec2 uv = vUv;
+
+          if (samplesActive == 0) {
+            color = texture(image, uv);
+          } else {
+            float baseY = 0.1;
+            float avgFactor = 0.1;
+            float dataX0 = 0.0;
+            float dataX1 = 1.0;
+            float dataY0 = 0.5;
+            float dataY1 = 0.8;
+            if (dataX0 <= uv.x && uv.x <= dataX1 && dataY0 <= uv.y) {
+              float dateWidth = dataX1 - dataX0;
+              float dataHeight = dataY1 - dataY0;
+              vec2 correctedUv = (uv - vec2(dataX0, dataY0)) / vec2(dateWidth, dataHeight);
+              vec4 sampleColor = gaussianBlur(sampleData, correctedUv, 1. / sampleDataSize.x, 25, sampleDataSize);
+              float factor = dataHeight;
+              uv.y -= sampleColor.r * factor * _shapeFactor(uv.x) * correctedUv.y;
+              // sampleColor.rgb = vec3(sampleColor.r);
+              // color = sampleColor;
+            }
+
+            uv.y -= sampleDataAvg * clamp(uv.y - baseY, 0., dataY0 - baseY) * avgFactor;
+            color = texture(imageFlat, uv);
+          }
+          gl_FragColor = color;
+        }
+      `}
+    />
+  );
+};

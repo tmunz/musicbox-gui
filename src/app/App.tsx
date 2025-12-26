@@ -1,5 +1,5 @@
 import './App.css';
-import React, { startTransition, useEffect, useRef, useState } from 'react';
+import { startTransition, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SampleProviderComponent } from './audio/SampleProviderComponent';
 import { useDimension } from './utils/useDimension';
@@ -25,17 +25,17 @@ export function App() {
 
   useEffect(() => {
     const pathId = location.pathname.replace('/', '');
-    const visualization = visualizations.find((v) => v.id === pathId);
+    const visualization = visualizations.find(v => v.id === pathId);
     if (visualization) {
       dispatch({ type: VisualizationAction.SET_VISUALIZATION, visualization });
     } else {
-      navigate(`/`, { replace: false });
+      navigate('/', { replace: false });
       dispatch({ type: VisualizationAction.SET_VISUALIZATION, visualization: visualizations[0] });
     }
   }, [location.pathname, navigate, dispatch]);
 
   const selectVisualization = (id: string) => {
-    const visualization = visualizations.find((v) => v.id === id);
+    const visualization = visualizations.find(v => v.id === id);
     if (!visualization) {
       console.error(`Visualization with id ${id} not found`);
       return;
@@ -46,7 +46,7 @@ export function App() {
     });
   };
 
-  const items = visualizations.map((v) => {
+  const items = visualizations.map(v => {
     const active = appState.visualization?.id === v.id;
     return {
       id: v.id,
@@ -58,18 +58,13 @@ export function App() {
           canvas={{ width, height }}
           isActive={active}
         />
-      )
+      ),
     };
   });
 
   return (
-    <div className='musicbox' ref={elementRef} style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
-      <Carousel
-        items={items}
-        selectedId={appState.visualization?.id}
-        onSelect={selectVisualization}
-        defaultFocus
-      />
+    <div className="musicbox" ref={elementRef} style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
+      <Carousel items={items} selectedId={appState.visualization?.id} onSelect={selectVisualization} defaultFocus />
       <Menubar hideTimeout={3000}>
         <MenubarItem icon={PiInfo}>
           <VisualizationInfo visualization={appState.visualization} />
@@ -79,10 +74,14 @@ export function App() {
         </MenubarItem>
         <SampleProviderComponent
           onSampleProviderChange={setSampleProvider}
-          {...Object.fromEntries(Object.entries(appState.visualization?.settings?.samples || {}).map(([key, setting]) => [key, setting.value]))}
+          {...Object.fromEntries(
+            Object.entries(appState.visualization?.settings?.samples || {}).map(([key, setting]) => [
+              key,
+              setting.value,
+            ])
+          )}
         />
       </Menubar>
     </div>
   );
 }
-

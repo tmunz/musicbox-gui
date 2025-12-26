@@ -1,7 +1,7 @@
-import React, { useRef } from "react";
-import { SampleProvider } from "../../../audio/SampleProvider";
-import { useSampleProviderTexture } from "../../../audio/useSampleProviderTexture";
-import { ShaderImage } from "../../../ui/shader-image/ShaderImage";
+import { useRef } from 'react';
+import { SampleProvider } from '../../../audio/SampleProvider';
+import { useSampleProviderTexture } from '../../../audio/useSampleProviderTexture';
+import { ShaderImage } from '../../../ui/shader-image/ShaderImage';
 
 export interface DelacroixLibertyLeadingThePeopleSplashesProps {
   width: number;
@@ -9,8 +9,11 @@ export interface DelacroixLibertyLeadingThePeopleSplashesProps {
   sampleProvider: SampleProvider;
 }
 
-export const DelacroixLibertyLeadingThePeopleSplashes = ({ sampleProvider, width, height }: DelacroixLibertyLeadingThePeopleSplashesProps) => {
-
+export const DelacroixLibertyLeadingThePeopleSplashes = ({
+  sampleProvider,
+  width,
+  height,
+}: DelacroixLibertyLeadingThePeopleSplashesProps) => {
   const [sampleTexture, updateSampleTexture] = useSampleProviderTexture(sampleProvider);
   const { current: imageUrls } = useRef({
     image: require('./delacroix-liberty-leading-the-people.jpg'),
@@ -23,16 +26,17 @@ export const DelacroixLibertyLeadingThePeopleSplashes = ({ sampleProvider, width
       sampleDataSize: { value: { x: sampleTexture.image.width, y: sampleTexture.image.height } },
       sampleDataAvg: { value: sampleProvider.getAvg()[0] / 255 },
       samplesActive: { value: sampleProvider.active ? 1 : 0 },
-    }
+    };
   };
 
-  return <ShaderImage
-    imageUrls={imageUrls}
-    objectFit='contain'
-    width={width}
-    height={height}
-    getUniforms={getUniforms}
-    vertexShader={` 
+  return (
+    <ShaderImage
+      imageUrls={imageUrls}
+      objectFit="contain"
+      width={width}
+      height={height}
+      getUniforms={getUniforms}
+      vertexShader={` 
       varying vec2 vUv;
       varying vec2 vPosition;
       varying vec2 vSize;
@@ -44,7 +48,7 @@ export const DelacroixLibertyLeadingThePeopleSplashes = ({ sampleProvider, width
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
     `}
-    fragmentShader={`
+      fragmentShader={`
       precision mediump float;
       
       varying vec2 vSize;
@@ -131,5 +135,6 @@ export const DelacroixLibertyLeadingThePeopleSplashes = ({ sampleProvider, width
         gl_FragColor = color;
       }
     `}
-  />;
+    />
+  );
 };

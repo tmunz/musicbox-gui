@@ -10,16 +10,15 @@ interface CarouselProps {
   items: { id: string; component: React.ReactNode }[];
   onSelect: (id: string) => void;
   selectedId?: string;
-  defaultFocus?: boolean
+  defaultFocus?: boolean;
 }
 
 export const Carousel = ({ items, onSelect, selectedId, defaultFocus = false }: CarouselProps) => {
-  const index = items.findIndex((item) => item.id === selectedId);
+  const index = items.findIndex(item => item.id === selectedId);
   const carouselRef = useRef<HTMLDivElement>(null);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const visible = useAutoHide();
-
 
   const next = () => {
     const nextIndex = (index + 1) % items.length;
@@ -88,31 +87,30 @@ export const Carousel = ({ items, onSelect, selectedId, defaultFocus = false }: 
   }, [index]);
 
   return (
-    <div className='carousel' ref={carouselRef} tabIndex={defaultFocus ? 0 : undefined}>
+    <div className="carousel" ref={carouselRef} tabIndex={defaultFocus ? 0 : undefined}>
       <div
-        className='carousel-track'
+        className="carousel-track"
         style={{
           transform: `translateX(calc(${-index * 100}% + ${dragOffset}px))`,
-          transition: isDragging ? 'none' : `transform ${ CAROUSEL_TRANSITION_DURATION_CSS } ease-in-out`,
+          transition: isDragging ? 'none' : `transform ${CAROUSEL_TRANSITION_DURATION_CSS} ease-in-out`,
         }}
       >
-        {items.map((item) => (
-          <CarouselItem 
-            key={item.id}
-            item={item}
-            isActive={item.id === selectedId}
-          />
+        {items.map(item => (
+          <CarouselItem key={item.id} item={item} isActive={item.id === selectedId} />
         ))}
       </div>
 
-      <IconButton className={`carousel-btn prev ${visible ? '' : 'carousel-btn-hidden'}`} onClick={prev} title='Previous'>
+      <IconButton
+        className={`carousel-btn prev ${visible ? '' : 'carousel-btn-hidden'}`}
+        onClick={prev}
+        title="Previous"
+      >
         <PiCaretLeft size={48} />
       </IconButton>
 
-      <IconButton className={`carousel-btn next ${visible ? '' : 'carousel-btn-hidden'}`} onClick={next} title='Next'>
+      <IconButton className={`carousel-btn next ${visible ? '' : 'carousel-btn-hidden'}`} onClick={next} title="Next">
         <PiCaretRight size={48} />
       </IconButton>
     </div>
   );
 };
-

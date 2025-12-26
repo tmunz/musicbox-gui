@@ -1,7 +1,7 @@
-import React, { useRef } from "react";
-import { SampleProvider } from "../../../audio/SampleProvider";
-import { useSampleProviderTexture } from "../../../audio/useSampleProviderTexture";
-import { ShaderImage } from "../../../ui/shader-image/ShaderImage";
+import { useRef } from 'react';
+import { SampleProvider } from '../../../audio/SampleProvider';
+import { useSampleProviderTexture } from '../../../audio/useSampleProviderTexture';
+import { ShaderImage } from '../../../ui/shader-image/ShaderImage';
 
 export interface ColorSquaresProps {
   size: number;
@@ -13,7 +13,6 @@ export interface ColorSquaresProps {
 }
 
 export const ColorSquares = ({ sampleProvider, size, visibilityThreshold, backgroundImage = 0 }: ColorSquaresProps) => {
-
   const [sampleTexture, updateSampleTexture] = useSampleProviderTexture(sampleProvider);
   const { current: imageUrls } = useRef({
     image: require('./color-squares.png'),
@@ -29,16 +28,17 @@ export const ColorSquares = ({ sampleProvider, size, visibilityThreshold, backgr
       samplesActive: { value: sampleProvider.active ? 1 : 0 },
       visibilityThreshold: { value: visibilityThreshold ?? 0.5 },
       backgroundImage: { value: backgroundImage },
-    }
+    };
   };
 
-  return <ShaderImage
-    imageUrls={imageUrls}
-    objectFit='contain'
-    width={size}
-    height={size}
-    getUniforms={getUniforms}
-    fragmentShader={`
+  return (
+    <ShaderImage
+      imageUrls={imageUrls}
+      objectFit="contain"
+      width={size}
+      height={size}
+      getUniforms={getUniforms}
+      fragmentShader={`
       precision mediump float;
 
       uniform sampler2D image;
@@ -96,5 +96,6 @@ export const ColorSquares = ({ sampleProvider, size, visibilityThreshold, backgr
         gl_FragColor = color;
       }
     `}
-  />;
+    />
+  );
 };

@@ -8,7 +8,10 @@ const getAudioContext = (): AudioContext => {
   return sharedAudioContext;
 };
 
-export const useAudio = (url: string, loop: boolean = false): Promise<{ stream: MediaStream, audio: HTMLAudioElement }> => {
+export const createAudioStream = (
+  url: string,
+  loop = false
+): Promise<{ stream: MediaStream; audio: HTMLAudioElement }> => {
   return new Promise((resolve, reject) => {
     try {
       const audioContext = getAudioContext();
@@ -16,7 +19,7 @@ export const useAudio = (url: string, loop: boolean = false): Promise<{ stream: 
       audio.src = url;
       audio.crossOrigin = 'anonymous';
       audio.loop = loop;
-      
+
       const onCanPlay = () => {
         try {
           let source = connectedElements.get(audio);
@@ -24,7 +27,7 @@ export const useAudio = (url: string, loop: boolean = false): Promise<{ stream: 
             source = audioContext.createMediaElementSource(audio);
             connectedElements.set(audio, source);
           }
-          
+
           const destination = audioContext.createMediaStreamDestination();
           source.connect(destination);
           source.connect(audioContext.destination);
@@ -34,13 +37,12 @@ export const useAudio = (url: string, loop: boolean = false): Promise<{ stream: 
           reject(new Error(`Failed to create media source: ${(err as Error).message}`));
         }
       };
-      
+
       audio.addEventListener('canplay', onCanPlay);
-      audio.addEventListener('error', (err) => {
+      audio.addEventListener('error', err => {
         audio.removeEventListener('canplay', onCanPlay);
         reject(new Error(`Failed to load audio stream: ${err.message}`));
       });
-
     } catch (err) {
       reject(err);
     }

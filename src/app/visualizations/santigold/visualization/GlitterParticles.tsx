@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Points, Texture } from 'three';
 import { SampleProvider } from '../../../audio/SampleProvider';
@@ -14,7 +14,9 @@ export interface GlitterParticlesProps {
 
 export const GlitterParticles = ({ sampleProvider, count = 50, textureScale = 0.01 }: GlitterParticlesProps) => {
   const pointsRef = useRef<Points | null>(null);
-  const { current: glitterTexture } = useRef<Texture>(useTexture(require('./assets/gold-glitter-texture-seamless.jpg')) as unknown as Texture);
+  const { current: glitterTexture } = useRef<Texture>(
+    useTexture(require('./assets/gold-glitter-texture-seamless.jpg')) as unknown as Texture
+  );
 
   const particles = useMemo(() => {
     const particleCount = sampleProvider.sampleSize * sampleProvider.frequencyBands * count;
@@ -36,7 +38,7 @@ export const GlitterParticles = ({ sampleProvider, count = 50, textureScale = 0.
     const circle = Math.pow(1 - yn * yn, 0.5);
     const x0 = x * width - random(i + 10532437) * (1 - y) + bow + xn * circle;
     return [x0 - 0.75, yn * 1.6 + random(i) + 0.4, k * circle * (1 - Math.abs(xn))];
-  }
+  };
 
   useFrame(() => {
     if (pointsRef.current) {
@@ -46,11 +48,11 @@ export const GlitterParticles = ({ sampleProvider, count = 50, textureScale = 0.
           const sampleValue = sampleProvider.get(j)[i] / 255;
           for (let k = 0; k < count; k++) {
             const a = i / sampleProvider.frequencyBands;
-            const b = 1 - (j / sampleProvider.sampleSize);
+            const b = 1 - j / sampleProvider.sampleSize;
             const c = k / count;
-            const index = ((j * sampleProvider.frequencyBands * count) + (i * count) + k) * 3;
+            const index = (j * sampleProvider.frequencyBands * count + i * count + k) * 3;
             const [x, y, z] = shapeFactor(a, b, c, index);
-            positions[index] = (x + (a - 0.5) * sampleValue * 0.2);
+            positions[index] = x + (a - 0.5) * sampleValue * 0.2;
             positions[index + 1] = y - (1.05 - b) * sampleValue * 3;
             positions[index + 2] = (1 - b) * (z + (c - 0.5) * sampleValue);
           }
@@ -62,27 +64,23 @@ export const GlitterParticles = ({ sampleProvider, count = 50, textureScale = 0.
 
   return (
     <points ref={pointsRef}>
-      <bufferGeometry >
+      <bufferGeometry>
         <bufferAttribute
           key={'position-' + particles.positions.length}
-          attach='attributes-position'
+          attach="attributes-position"
           array={particles.positions}
           count={particles.positions.length / 3}
           itemSize={3}
         />
         <bufferAttribute
           key={'textureOffset-' + particles.textureOffsets.length}
-          attach='attributes-textureOffset'
+          attach="attributes-textureOffset"
           array={particles.textureOffsets}
           count={particles.textureOffsets.length / 2}
           itemSize={2}
         />
       </bufferGeometry>
-      <glitterMaterial
-        textureImage={glitterTexture}
-        textureScale={textureScale}
-        size={0.4}
-      />
+      <glitterMaterial textureImage={glitterTexture} textureScale={textureScale} size={0.4} />
     </points>
   );
 };

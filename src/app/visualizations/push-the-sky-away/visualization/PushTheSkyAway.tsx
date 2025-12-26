@@ -1,10 +1,9 @@
-import React from 'react';
 import { SampleProvider } from '../../../audio/SampleProvider';
 import { Bedroom } from './Bedroom';
 
 export interface PushTheSkyAwayProps {
   sampleProvider: SampleProvider;
-  canvas: { width: number, height: number };
+  canvas: { width: number; height: number };
 }
 
 export const PushTheSkyAway = ({ sampleProvider, canvas }: PushTheSkyAwayProps) => {
@@ -14,4 +13,4 @@ export const PushTheSkyAway = ({ sampleProvider, canvas }: PushTheSkyAwayProps) 
       <Bedroom width={canvas.width * sizeRatio} height={canvas.height * sizeRatio} sampleProvider={sampleProvider} />
     </div>
   );
-}
+};

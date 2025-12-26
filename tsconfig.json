@@ -3,7 +3,7 @@
     "noImplicitAny": true,
     "module": "es2020",
     "target": "es6",
-    "jsx": "react",
+    "jsx": "react-jsx",
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -16,5 +16,8 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*"]
+  "include": [
+    "src",
+    "src/types"
+  ]
 }

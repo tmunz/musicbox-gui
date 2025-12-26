@@ -1,14 +1,12 @@
-import React from 'react';
 import { Pulsar } from './Pulsar';
 import { SampleProvider } from '../../../audio/SampleProvider';
 
 export interface UnknownPleasuresProps {
   sampleProvider: SampleProvider;
-  canvas: { width: number, height: number };
+  canvas: { width: number; height: number };
 }
 
 export const UnknownPleasures = ({ sampleProvider, canvas }: UnknownPleasuresProps) => {
-
   const sizeRatio = 0.6;
   const sideRatio = 7 / 10;
   const width = Math.floor(Math.min(canvas.width, canvas.height * sideRatio) * sizeRatio);
@@ -19,4 +17,4 @@ export const UnknownPleasures = ({ sampleProvider, canvas }: UnknownPleasuresPro
       <Pulsar width={width} height={height} sampleProvider={sampleProvider} />
     </div>
   );
-}
+};

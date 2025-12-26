@@ -1,5 +1,5 @@
 import './MenubarItem.css';
-import React, { useState, forwardRef, useImperativeHandle, ReactNode, ComponentType } from 'react';
+import { useState, forwardRef, useImperativeHandle, ReactNode, ComponentType } from 'react';
 import { IconButton } from './IconButton';
 import { IconBaseProps } from 'react-icons';
 import { PiX } from 'react-icons/pi';
@@ -21,12 +21,9 @@ export const MenubarItem = forwardRef<MenubarItemRef, MenubarItemProps>(({ child
   }));
 
   return (
-    <div className='menubar-item'>
+    <div className="menubar-item">
       <div className={`menu-item-content ${active ? '' : 'menu-item-content-hidden'}`}>{children}</div>
-      <IconButton
-        className={active ? 'close-button' : ''}
-        onClick={() => setActive(b => !b)}
-      >
+      <IconButton className={active ? 'close-button' : ''} onClick={() => setActive(b => !b)}>
         {active ? <PiX size={36} /> : <Icon size={36} />}
       </IconButton>
     </div>

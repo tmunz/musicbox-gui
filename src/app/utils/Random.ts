@@ -1,4 +1,4 @@
-export const random = (seed: number = 0, min = 0, max = 1): number => {
+export const random = (seed: number = 0, min: number = 0, max: number = 1): number => {
   let n: number; // [0, 1[
   if (typeof seed !== 'undefined') {
     // Mulberry32

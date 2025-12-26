@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useEffect, useState, CSSProperties } from 'react';
+import { useRef, useMemo, useEffect, useState, CSSProperties } from 'react';
 import { Canvas, RootState, useFrame, useThree } from '@react-three/fiber';
 import { OrthographicCamera } from '@react-three/drei';
 import { IUniform, Mesh, NearestFilter, LinearFilter, Texture, TextureLoader, ShaderMaterial } from 'three';
@@ -69,10 +69,9 @@ export const ShaderImageThreePlane = ({
   getUniforms = () => ({}),
   imageFilter = NearestFilter,
 }: ShaderImageThreeProps) => {
-
   const ref = useRef<Mesh>(null);
   const materialRef = useRef<ShaderMaterial>(null);
-  const [textures, setTextures] = useState<Record<string, { loaded: boolean, url: string, data?: Texture }>>({});
+  const [textures, setTextures] = useState<Record<string, { loaded: boolean; url: string; data?: Texture }>>({});
   const rootState = useThree();
 
   useEffect(() => {
@@ -81,7 +80,7 @@ export const ShaderImageThreePlane = ({
         if (textures[id]?.url === url) {
           return textures;
         } else {
-          new TextureLoader().load(url, (textureData) => {
+          new TextureLoader().load(url, textureData => {
             setTextures(textures => {
               const texture = { ...textures[id], data: textureData, loaded: true };
               return { ...textures, [id]: texture };
@@ -104,8 +103,8 @@ export const ShaderImageThreePlane = ({
         return agg;
       }
     }, {});
-    return { ...getUniforms(rootState), ...imageUniforms, };
-  }
+    return { ...getUniforms(rootState), ...imageUniforms };
+  };
 
   const shaderMaterial = useMemo(() => {
     return new ShaderMaterial({
@@ -143,21 +142,15 @@ export const ShaderImageThreePlane = ({
   return (
     <mesh ref={ref}>
       <planeGeometry />
-      <primitive ref={materialRef} object={shaderMaterial} attach='material' transparency />
+      <primitive ref={materialRef} object={shaderMaterial} attach="material" transparency />
     </mesh>
   );
 };
 
 export const ShaderImageThree = (props: ShaderImageThreeProps) => {
-  
   return (
     <Canvas orthographic style={props.style}>
-      <OrthographicCamera
-        makeDefault
-        near={0}
-        far={2}
-        position={[0, 0, 1]}
-      />
+      <OrthographicCamera makeDefault near={0} far={2} position={[0, 0, 1]} />
       <ShaderImageThreePlane {...props} />
     </Canvas>
   );

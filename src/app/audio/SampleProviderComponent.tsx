@@ -11,9 +11,14 @@ interface SampleProviderProps {
   maxFrequency?: number;
 }
 
-export const SampleProviderComponent = ({ onSampleProviderChange, frequencyBands = 32, sampleSize = 1, minFrequency = 10, maxFrequency = 10000 }: SampleProviderProps) => {
-
-  const [streamProvider, setStreamProvider] = React.useState<Promise<MediaStream | null>>(new Promise(() => { }));
+export const SampleProviderComponent = ({
+  onSampleProviderChange,
+  frequencyBands = 32,
+  sampleSize = 1,
+  minFrequency = 10,
+  maxFrequency = 10000,
+}: SampleProviderProps) => {
+  const [streamProvider, setStreamProvider] = React.useState<Promise<MediaStream | null>>(Promise.resolve(null));
   const sampleProvider = useAudioAnalysis(streamProvider, frequencyBands, sampleSize, minFrequency, maxFrequency);
 
   useEffect(() => {
@@ -21,9 +26,11 @@ export const SampleProviderComponent = ({ onSampleProviderChange, frequencyBands
   }, [sampleProvider]);
 
   return (
-    <Audio onChange={(sp) => {
-      setStreamProvider(sp);
-      onSampleProviderChange(sampleProvider);
-    }} />
+    <Audio
+      onChange={sp => {
+        setStreamProvider(sp);
+        onSampleProviderChange(sampleProvider);
+      }}
+    />
   );
-}
+};

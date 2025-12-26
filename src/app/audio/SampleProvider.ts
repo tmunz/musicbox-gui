@@ -2,7 +2,6 @@ import { FixedSizeQueue } from '../utils/FixedSizeQueue';
 
 export type ActiveListener = (active: boolean) => void;
 export class SampleProvider extends FixedSizeQueue<Uint8Array> {
-
   private _active = false;
   private _frequencyBands = 1;
   private _activeListeners: ActiveListener[] = [];
@@ -52,20 +51,20 @@ export class SampleProvider extends FixedSizeQueue<Uint8Array> {
     if (this._active !== prevActive) {
       this._emitActiveChange();
     }
-  }
+  };
 
   flat = () => {
     return this.queue.reduce((acc: Uint8Array, value: Uint8Array, i: number) => {
       acc.set(value, i * this.frequencyBands);
       return acc;
     }, new Uint8Array(this.sampleSize * this.frequencyBands));
-  }
+  };
 
   getAvg = (): number[] => {
-    return this.queue.map((sample) => {
+    return this.queue.map(sample => {
       return sample.reduce((acc, val) => acc + val, 0) / sample.length;
     });
-  }
+  };
 
   // Returns the max value and the index of the sample that contains it for each frequency band (sorted by frequencies from low to high)
   getMax = (): { max: number; sampleIndex: number }[] => {

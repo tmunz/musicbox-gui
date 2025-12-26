@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Canvas, useFrame, Size } from '@react-three/fiber';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import { Vector2, Vector3 } from 'three';
@@ -10,22 +10,31 @@ export interface TheDarkSideOfTheMoonProps {
   sampleProvider?: SampleProvider;
   volumeAmountIndicator?: number;
   dataRatio?: number;
+  pointerSensitivity?: number;
+  maxBounces?: number;
+  deflection?: number;
 }
 
 export const TheDarkSideOfTheMoon = (props: TheDarkSideOfTheMoonProps) => {
-
   return (
     <Canvas orthographic gl={{ antialias: false }} camera={{ position: [0, 0, 100], zoom: 70 }}>
-      <color attach='background' args={['#000000']} />
+      <color attach="background" args={['#000000']} />
       <Scene {...props} />
       <EffectComposer>
         <Bloom mipmapBlur intensity={0.5} />
       </EffectComposer>
     </Canvas>
   );
-}
+};
 
-const Scene = ({ sampleProvider, volumeAmountIndicator = 1, dataRatio = 1 }: TheDarkSideOfTheMoonProps) => {
+const Scene = ({
+  sampleProvider,
+  volumeAmountIndicator = 1,
+  dataRatio = 1,
+  pointerSensitivity = 0.01,
+  maxBounces = 10,
+  deflection = 36,
+}: TheDarkSideOfTheMoonProps) => {
   const [initialState, setInitialState] = useState(true);
   const beamRef = useRef<BeamApi | null>(null);
   const { current: start } = useRef(new Vector3(0, 0, 0));
@@ -33,29 +42,37 @@ const Scene = ({ sampleProvider, volumeAmountIndicator = 1, dataRatio = 1 }: The
   const { current: target } = useRef(new Vector3(0, 0.3, 0));
 
   const getStartPosition = (pointer: Vector2, viewport: Size): [number, number, number] => {
-    let x = target.x - viewport.width / 2;
-    let angle = 0.25;
+    const initialAngleRads = 0.25;
+    const x = target.x - viewport.width / 2;
+    const defaultStart: [number, number, number] = [x, target.y + x * Math.tan(initialAngleRads), 0];
     if (sampleProvider) {
       if (sampleProvider.active) {
         const minDistance = 1;
-        angle -= pointer.y * 0.01;
-        const indicatorValue = sampleProvider.getAvg()[0] / 255 * volumeAmountIndicator + 1 - volumeAmountIndicator;
-        x = -minDistance + Math.min(x + minDistance, 0) * indicatorValue;
+        const indicatorValue = (sampleProvider.getAvg()[0] / 255) * volumeAmountIndicator + 1 - volumeAmountIndicator;
+        const directionVector = new Vector2(
+          (pointer.x * viewport.width) / 2 - target.x,
+          (pointer.y * viewport.height) / 2 - target.y
+        );
+        const totalDistance = directionVector.length();
+        const direction = directionVector.normalize();
+        const remainingDistance = totalDistance - minDistance;
+        const adjustedDistance = minDistance + remainingDistance * indicatorValue;
+        return [
+          (1 - pointerSensitivity) * defaultStart[0] + pointerSensitivity * (target.x + direction.x * adjustedDistance),
+          (1 - pointerSensitivity) * defaultStart[1] + pointerSensitivity * (target.y + direction.y * adjustedDistance),
+          0,
+        ];
       }
     } else {
       if (pointer.x !== 0 || pointer.y !== 0) {
         setInitialState(false);
       }
       if (!initialState) {
-        return [
-          pointer.x * viewport.width / 2,
-          pointer.y * viewport.height / 2,
-          0
-        ];
+        return [(pointer.x * viewport.width) / 2, (pointer.y * viewport.height) / 2, 0];
       }
     }
-    return [x, target.y + x * Math.tan(angle), 0];
-  }
+    return defaultStart;
+  };
 
   useFrame(({ pointer, viewport }) => {
     start.set(...getStartPosition(pointer, viewport));
@@ -63,20 +80,30 @@ const Scene = ({ sampleProvider, volumeAmountIndicator = 1, dataRatio = 1 }: The
     beamRef.current?.setBeam(start, direction);
   });
 
-  const deflection = useCallback((inDirection: Vector3, faceNormal: Vector3) => {
-    const deflectionDirection = inDirection.clone();
-    const deflectionAmount = Math.sin(-Math.PI / 5);
-    deflectionDirection.add(faceNormal.clone().multiplyScalar(deflectionAmount));
-    return deflectionDirection.normalize();
-  }, []);
+  const deflectionFun = useCallback(
+    (inDirection: Vector3, faceNormal: Vector3) => {
+      const deflectionRad = (deflection * Math.PI) / 180;
+      const deflectionDirection = inDirection.clone();
+      const deflectionValue = Math.sin(-deflectionRad);
+      deflectionDirection.add(faceNormal.clone().multiplyScalar(deflectionValue));
+      return deflectionDirection.normalize();
+    },
+    [deflection]
+  );
 
   return (
     <>
-      <Beam ref={beamRef} maxBounces={2} deflection={deflection} data={sampleProvider} dataRatio={dataRatio} >
+      <Beam
+        ref={beamRef}
+        maxBounces={maxBounces}
+        deflection={deflectionFun}
+        data={sampleProvider}
+        dataRatio={dataRatio}
+      >
         <pointLight position={[-2.3, 1, -2]} color={[127, 191, 255]} intensity={0.3} />
         <pointLight position={[2, 1, -2]} color={[127, 191, 255]} intensity={0.2} />
         <Prism position={[0, -0.5, 0]} />
-      </Beam >
+      </Beam>
     </>
   );
-}
+};

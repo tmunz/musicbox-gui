@@ -1,12 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import { SampleProvider } from './SampleProvider';
 
-export const useAudioAnalysis = (streamProvider: Promise<MediaStream | null>, frequencyBands = 32, sampleSize = 1,
-  minFrequency = 0, maxFrequency = 22050, melodicScale = false, fftSize = 2048) => {
-
+export const useAudioAnalysis = (
+  streamProvider: Promise<MediaStream | null>,
+  frequencyBands = 32,
+  sampleSize = 1,
+  minFrequency = 0,
+  maxFrequency = 22050,
+  melodicScale = false,
+  fftSize = 2048
+) => {
   const audioDataRef = useRef<Uint8Array | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const [audioFrames, setAudioFrames] = useState(new SampleProvider(sampleSize, new Uint8Array(frequencyBands).fill(0)));
+  const [audioFrames, setAudioFrames] = useState(
+    new SampleProvider(sampleSize, new Uint8Array(frequencyBands).fill(0))
+  );
 
   useEffect(() => {
     let audioContext: AudioContext | null = null;
@@ -55,15 +63,15 @@ export const useAudioAnalysis = (streamProvider: Promise<MediaStream | null>, fr
         const startIdx = Math.floor(i * bandSize);
         const endIdx = Math.floor((i + 1) * bandSize);
         let sum = 0;
-        
+
         for (let j = startIdx; j < endIdx && j < slicedData.length; j++) {
           sum += slicedData[j];
         }
-        
+
         const count = Math.max(1, endIdx - startIdx);
         bands[i] = Math.round(sum / count);
       }
-      
+
       return bands;
     }
     return null;
@@ -75,7 +83,7 @@ export const useAudioAnalysis = (streamProvider: Promise<MediaStream | null>, fr
 
   useEffect(() => {
     const actualSampleRate = analyserRef.current?.context.sampleRate ?? 44100;
-    const interval = 1000 * fftSize / actualSampleRate;
+    const interval = (1000 * fftSize) / actualSampleRate;
     const intervalId = setInterval(() => {
       const audioData = getFrequencyData();
       if (audioData) {

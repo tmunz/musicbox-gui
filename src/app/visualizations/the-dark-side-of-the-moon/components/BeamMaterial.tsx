@@ -83,7 +83,7 @@ extend({
         gl_FragColor = vec4(color, spotA * startFadeA * endFadeA);
       }
     `
-  )
+  ),
 });
 
 export interface BeamMaterial {
@@ -93,8 +93,8 @@ export interface BeamMaterial {
   endSize: number;
   colorRatio: number;
   intensity: number;
-  sampleData?: DataTexture,
-  sampleDataSize?: { x: number, y: number },
+  sampleData?: DataTexture;
+  sampleDataSize?: { x: number; y: number };
   samplesActive?: number;
   sampleRatio?: number;
 }

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import { useRef } from 'react';
 import { ShaderImage } from '../../../ui/shader-image/ShaderImage';
 import { SampleProvider } from '../../../audio/SampleProvider';
 import { useSampleProviderTexture } from '../../../audio/useSampleProviderTexture';
@@ -15,10 +15,15 @@ export interface RoseProps {
 }
 
 export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch = 3 }: RoseProps) => {
-
   const [sampleTexture, updateSampleTexture] = useSampleProviderTexture(sampleProvider);
-  const [weightedMaxTexture, updateWeightedMaxTexture] = useSampleProviderTexture(sampleProvider, (sampleProvider) => convertWeightedMaxData(sampleProvider), () => 1);
-  const [leafTexture, updateLeafTexture] = useSampleProviderTexture(sampleProvider, (sampleProvider) => convertLeafData(sampleProvider));
+  const [weightedMaxTexture, updateWeightedMaxTexture] = useSampleProviderTexture(
+    sampleProvider,
+    sampleProvider => convertWeightedMaxData(sampleProvider),
+    () => 1
+  );
+  const [leafTexture, updateLeafTexture] = useSampleProviderTexture(sampleProvider, sampleProvider =>
+    convertLeafData(sampleProvider)
+  );
 
   const { current: imageUrls } = useRef({
     image: require('./rose.png'),
@@ -34,22 +39,25 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
       sampleData: { value: sampleTexture },
       sampleDataSize: { value: { x: sampleTexture.image.width, y: sampleTexture.image.height } },
       weightedMaxData: { value: weightedMaxTexture },
-      weightedMaxDataSize: { value: { x: weightedMaxTexture.image.width, y: weightedMaxTexture.image.height } },
+      weightedMaxDataSize: {
+        value: { x: weightedMaxTexture.image.width, y: weightedMaxTexture.image.height },
+      },
       leafData: { value: leafTexture },
       leafDataSize: { value: { x: leafTexture.image.width, y: leafTexture.image.height } },
       bassValue: { value: bassValue },
       depth: { value: depth },
       leafsPerBranch: { value: leafsPerBranch },
-    }
+    };
   };
 
-  return <ShaderImage
-    imageUrls={imageUrls}
-    objectFit='contain'
-    width={width}
-    height={height}
-    getUniforms={getUniforms}
-    vertexShader={` 
+  return (
+    <ShaderImage
+      imageUrls={imageUrls}
+      objectFit="contain"
+      width={width}
+      height={height}
+      getUniforms={getUniforms}
+      vertexShader={` 
       varying vec2 vUv;
       varying vec2 vPosition;
       varying vec2 vSize;
@@ -61,7 +69,7 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
     `}
-    fragmentShader={`
+      fragmentShader={`
       precision mediump float;
       #define PI 3.14159
       #define STROKE_WIDTH 0.005
@@ -88,7 +96,7 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
       const vec4 color2 = vec4(.9, .8, .75, 1.);
       const float spaceY = .1;
 
-      ${ gaussianBlur }
+      ${gaussianBlur}
 
       float _line(vec2 uv, vec2 a, vec2 b, float strokeWidth) {
         vec2 pa = uv - a;
@@ -201,6 +209,6 @@ export const Rose = ({ width, height, sampleProvider, depth = 2, leafsPerBranch 
         gl_FragColor = rose(uv);  
       }
     `}
-  />;
-}
-
+    />
+  );
+};

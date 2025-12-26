@@ -1,16 +1,16 @@
-import chvrchesEveryEyeOpen from "./chvrches-every-eye-open";
-import theDarkSideOfTheMoon from "./the-dark-side-of-the-moon";
-import karpatenhund from "./karpatenhund";
-import santigold from "./santigold";
-import unknownPleasures from "./unknown-pleasures";
-import velvetUnderground from "./velvet-underground";
-import vivaLaVida from "./viva-la-vida";
-import crises from "./crises";
-import pushTheSkyAway from "./push-the-sky-away";
-import minorEarthMajorSky from "./minor-earth-major-sky";
-import violator from "./violator";
-import transEuropeExpress from "./trans-europe-express";
-import theRiddle from "./the-riddle";
+import chvrchesEveryEyeOpen from './chvrches-every-eye-open';
+import theDarkSideOfTheMoon from './the-dark-side-of-the-moon';
+import karpatenhund from './karpatenhund';
+import santigold from './santigold';
+import unknownPleasures from './unknown-pleasures';
+import velvetUnderground from './velvet-underground';
+import vivaLaVida from './viva-la-vida';
+import crises from './crises';
+import pushTheSkyAway from './push-the-sky-away';
+import minorEarthMajorSky from './minor-earth-major-sky';
+import violator from './violator';
+import transEuropeExpress from './trans-europe-express';
+import theRiddle from './the-riddle';
 
 export default [
   unknownPleasures,
@@ -27,7 +27,7 @@ export default [
   // vivaLaVida,
   // velvetUnderground,
 
-  theRiddle
+  theRiddle,
 ];
 
 // Kraftwerk

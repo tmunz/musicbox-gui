@@ -1,10 +1,9 @@
-import React from 'react';
 import { Cat } from './Cat';
 import { SampleProvider } from '../../../audio/SampleProvider';
 
 export interface KarpatenhundProps {
   sampleProvider: SampleProvider;
-  canvas: { width: number, height: number };
+  canvas: { width: number; height: number };
 }
 
 export const Karpatenhund = ({ sampleProvider, canvas }: KarpatenhundProps) => {
@@ -14,4 +13,4 @@ export const Karpatenhund = ({ sampleProvider, canvas }: KarpatenhundProps) => {
       <Cat width={canvas.width * sizeRatio} height={canvas.height * sizeRatio} sampleProvider={sampleProvider} />
     </div>
   );
-}
+};

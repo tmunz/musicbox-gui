@@ -2,7 +2,7 @@ import { RefObject, useEffect, useRef, useState } from 'react';
 
 export const useDimension = (elementRef: RefObject<HTMLElement>, animationThreshold = 0) => {
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [dimension, setDimension] = useState<{ width: number, height: number } | null>(null);
+  const [dimension, setDimension] = useState<{ width: number; height: number } | null>(null);
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver(entries => {
@@ -48,5 +48,4 @@ export const useDimension = (elementRef: RefObject<HTMLElement>, animationThresh
   }, []);
 
   return dimension;
-
 };

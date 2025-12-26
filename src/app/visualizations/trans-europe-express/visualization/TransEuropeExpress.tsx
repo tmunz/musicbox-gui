@@ -1,10 +1,9 @@
-import React from 'react';
 import { SampleProvider } from '../../../audio/SampleProvider';
 import { Tee } from './Tee';
 
 export interface TransEuropeExpressProps {
   sampleProvider: SampleProvider;
-  canvas: { width: number, height: number };
+  canvas: { width: number; height: number };
 }
 
 export const TransEuropeExpress = ({ sampleProvider, canvas }: TransEuropeExpressProps) => {

@@ -1,6 +1,6 @@
-import { shaderMaterial } from "@react-three/drei";
-import { extend, Object3DNode } from "@react-three/fiber";
-import { ShaderMaterial, Texture } from "three";
+import { shaderMaterial } from '@react-three/drei';
+import { extend, Object3DNode } from '@react-three/fiber';
+import { ShaderMaterial, Texture } from 'three';
 
 extend({
   GlitterMaterial: shaderMaterial(
@@ -42,7 +42,7 @@ extend({
         vec4 texColor = texture2D(textureImage,  uv);
         gl_FragColor = vec4(texColor.r * 1.3, texColor.g * 1.8, texColor.b * 1.8, 1.);
       }
-    `,
+    `
   ),
 });
 

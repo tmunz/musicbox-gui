@@ -1,6 +1,6 @@
-import { createSampleSettings } from "../../audio/SampleSettings";
-import { Visualization } from "../Visualization";
-import { TheRiddle } from "./visualization/TheRiddle";
+import { createSampleSettings } from '../../audio/SampleSettings';
+import { Visualization } from '../Visualization';
+import { TheRiddle } from './visualization/TheRiddle';
 
 const theRiddle: Visualization = {
   id: 'the-riddle',
@@ -8,12 +8,13 @@ const theRiddle: Visualization = {
   artist: "Gigi D'Agostino",
   design: 'Ged Haney, Andreas Hykade',
   imgSrc: require('./the-riddle.png'),
-  description: "This is actually not an album cover art, it is a visualization inspired by the iconic music video of Gigi D'Agostino's track. The landscape is shaped by the audio samples, and you can start the experience to see music and visual movement interact.",
+  description:
+    "This is not album cover art; it is a visualization inspired by the iconic music video of Gigi D'Agostino's track. The landscape is shaped by the audio samples, and you can start the experience to see music and visual movement interact.",
   component: TheRiddle,
   color: '#01A101',
   settings: {
     samples: createSampleSettings(32, 64),
-  }
+  },
 };
 
 export default theRiddle;

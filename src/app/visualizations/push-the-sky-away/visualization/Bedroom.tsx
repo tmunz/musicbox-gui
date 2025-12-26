@@ -1,11 +1,11 @@
-import React, { useRef } from "react";
-import { SampleProvider } from "../../../audio/SampleProvider";
-import { useSampleProviderTexture } from "../../../audio/useSampleProviderTexture";
-import { ShaderImage } from "../../../ui/shader-image/ShaderImage";
-import { LinearFilter } from "three";
-import { RootState } from "@react-three/fiber";
-import { convertLightData } from "./LightDataConverter";
-import { gaussianBlur } from "../../../utils/ShaderUtils";
+import { useRef } from 'react';
+import { SampleProvider } from '../../../audio/SampleProvider';
+import { useSampleProviderTexture } from '../../../audio/useSampleProviderTexture';
+import { ShaderImage } from '../../../ui/shader-image/ShaderImage';
+import { LinearFilter } from 'three';
+import { RootState } from '@react-three/fiber';
+import { convertLightData } from './LightDataConverter';
+import { gaussianBlur } from '../../../utils/ShaderUtils';
 
 export interface BedroomProps {
   width: number;
@@ -15,7 +15,6 @@ export interface BedroomProps {
 }
 
 export const Bedroom = ({ sampleProvider, width, height, perspectiveEffect = 0.08 }: BedroomProps) => {
-
   const [sampleTexture, updateSampleTexture] = useSampleProviderTexture(sampleProvider, convertLightData);
 
   const { current: imageUrls } = useRef({
@@ -25,23 +24,24 @@ export const Bedroom = ({ sampleProvider, width, height, perspectiveEffect = 0.0
 
   const getUniforms = (rootState: RootState) => {
     updateSampleTexture();
-  
+
     return {
       perspective: { value: [rootState.pointer.x ?? 0, rootState.pointer.y ?? 0] },
       perspectiveEffect: { value: [perspectiveEffect, perspectiveEffect] },
       sampleData: { value: sampleTexture },
       sampleDataSize: { value: { x: sampleTexture.image.width, y: sampleTexture.image.height } },
-    }
+    };
   };
 
-  return <ShaderImage
-    imageUrls={imageUrls}
-    objectFit='contain'
-    width={width}
-    height={height}
-    getUniforms={getUniforms}
-    imageFilter={LinearFilter}
-    fragmentShader={`
+  return (
+    <ShaderImage
+      imageUrls={imageUrls}
+      objectFit="contain"
+      width={width}
+      height={height}
+      getUniforms={getUniforms}
+      imageFilter={LinearFilter}
+      fragmentShader={`
       precision mediump float;
       varying vec2 vUv;
 
@@ -92,7 +92,7 @@ export const Bedroom = ({ sampleProvider, width, height, perspectiveEffect = 0.0
         // color.rgb = vec3(sampleValue);
 
         gl_FragColor = color;
-      }`
-    }
-  />
+      }`}
+    />
+  );
 };
