@@ -20,7 +20,7 @@ export const drawActor = `
     return length(p - pt);
   }
 
-  float sdfPolygon(vec2 p, vec2 points[6], float bendFactors[6]) {
+  float sdfPolygon(vec2 p, vec2 points[6], mediump float bendFactors[6]) {
     float minDist = 1e10;
     float winding = 0.0;
     int N = 6;
