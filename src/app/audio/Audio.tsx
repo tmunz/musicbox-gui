@@ -4,6 +4,7 @@ import { createAudioStream } from './AudioStream';
 import { MediaStreamType } from './MediaStreamType';
 import { IconButton } from '../ui/IconButton';
 import { PiPlay, PiPlayFill, PiRecordDuotone, PiRecordFill, PiStop, PiUpload } from 'react-icons/pi';
+import { SpotifyService } from '../spotify/SpotifyService';
 
 interface AudioProviderProps {
   onChange: (stream: Promise<MediaStream | null>) => void;
@@ -18,6 +19,10 @@ export const Audio = ({ onChange }: AudioProviderProps) => {
   const [error, setError] = useState<string | null>(null);
   const [url, setUrl] = useState<string>('https://rautemusik.stream25.radiohost.de/rm-80s_mp3-192');
   const [fileName, setFileName] = useState<string>('');
+  const [spotifyService] = useState(() => new SpotifyService());
+  const [isSpotifyLoading, setIsSpotifyLoading] = useState(false);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [currentSpotifyTrack, setCurrentSpotifyTrack] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // TODO, use state management for errors
@@ -26,6 +31,29 @@ export const Audio = ({ onChange }: AudioProviderProps) => {
       alert(error);
     }
   }, [error]);
+
+  useEffect(() => {
+    const checkSpotifyAuth = async () => {
+      const hash = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      const accessToken = params.get('access_token');
+      
+      if (accessToken) {
+        setIsSpotifyLoading(true);
+        try {
+          const authenticated = await spotifyService.authenticate();
+          if (authenticated) {
+            await playSpotifyTrack();
+          }
+        } catch (e) {
+          setError('Failed to play Spotify track after login: ' + (e as Error).message);
+        } finally {
+          setIsSpotifyLoading(false);
+        }
+      }
+    };
+    checkSpotifyAuth();
+  }, []);
 
   const activateMicrophone = async () => {
     stop();
@@ -69,6 +97,37 @@ export const Audio = ({ onChange }: AudioProviderProps) => {
     }
   };
 
+  const handleSpotifyLogin = async () => {
+    setIsSpotifyLoading(true);
+    try {
+      const authenticated = await spotifyService.authenticate();
+      if (authenticated) {
+        await playSpotifyTrack();
+      } else {
+        setError('Failed to authenticate with Spotify');
+      }
+    } catch (e) {
+      setError('Spotify login failed: ' + (e as Error).message);
+    } finally {
+      setIsSpotifyLoading(false);
+    }
+  };
+
+  const playSpotifyTrack = async () => {
+    try {
+      const track = await spotifyService.playAlbumAndGetCurrentTrack();
+      if (track) {
+        setCurrentSpotifyTrack(`${track.name} by ${track.artists.map((a: any) => a.name).join(', ')}`);
+        setError(null);
+        console.log('Playing through Spotify:', track.name);
+      } else {
+        setError('Could not start playback');
+      }
+    } catch (e) {
+      setError('Failed to play Spotify track: ' + (e as Error).message);
+    }
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -89,6 +148,18 @@ export const Audio = ({ onChange }: AudioProviderProps) => {
       }
       setAudioPlayer(null);
     }
+    
+    // Stop Spotify playback if it's currently playing
+    if (currentSpotifyTrack) {
+      spotifyService.stopPlayback().catch(console.error);
+    }
+    
+    // Close audio context if it exists
+    if (audioContext) {
+      audioContext.close().catch(console.error);
+      setAudioContext(null);
+    }
+    
     if (currentStream?.stream) {
       currentStream.stream.getTracks().forEach(track => track.stop());
       setCurrentStream(null);
@@ -96,13 +167,14 @@ export const Audio = ({ onChange }: AudioProviderProps) => {
       setError(null);
     }
     setFileName('');
+    setCurrentSpotifyTrack('');
   };
 
   const size = 36;
 
   return (
     <div className="audio">
-      <IconButton onClick={stop} title="Stop" disabled={!currentStream}>
+      <IconButton onClick={stop} title="Stop" disabled={!currentStream && !currentSpotifyTrack}>
         <PiStop size={size} />
       </IconButton>
 
@@ -126,6 +198,24 @@ export const Audio = ({ onChange }: AudioProviderProps) => {
           <PiRecordDuotone size={size} />
         )}
       </IconButton>
+
+      <button
+        onClick={handleSpotifyLogin}
+        disabled={isSpotifyLoading}
+        style={{
+          background: '#1DB954',
+          color: 'white',
+          border: 'none',
+          padding: '8px 12px',
+          borderRadius: '4px',
+          fontSize: '12px',
+          cursor: isSpotifyLoading ? 'not-allowed' : 'pointer',
+          opacity: isSpotifyLoading ? 0.6 : 1
+        }}
+        title={currentSpotifyTrack || "Play Random Spotify Track"}
+      >
+        {isSpotifyLoading ? 'Loading...' : 'Spotify'}
+      </button>
 
       <div className="url-stream">
         <div className="input-wrapper">
