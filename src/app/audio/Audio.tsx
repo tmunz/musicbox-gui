@@ -2,8 +2,8 @@ import './Audio.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { createAudioStream } from './AudioStream';
 import { MediaStreamType } from './MediaStreamType';
-import { IconButton } from '../ui/IconButton';
-import { PiPlay, PiPlayFill, PiRecordDuotone, PiRecordFill, PiStop, PiUpload } from 'react-icons/pi';
+import { PiPlay, PiRecordDuotone, PiRecordFill, PiStop, PiUpload } from 'react-icons/pi';
+import { IconToggleButton } from '../ui/icon-button/IconToggleButton';
 
 interface AudioProviderProps {
   onChange: (stream: Promise<MediaStream | null>) => void;
@@ -80,6 +80,30 @@ export const Audio = ({ onChange }: AudioProviderProps) => {
     fileInputRef.current?.click();
   };
 
+  const handleFileToggle = () => {
+    if (currentStream?.type === MediaStreamType.FILE) {
+      stop();
+    } else {
+      handleUploadClick();
+    }
+  };
+
+  const handleMicrophoneToggle = () => {
+    if (currentStream?.type === MediaStreamType.MICROPHONE) {
+      stop();
+    } else {
+      activateMicrophone();
+    }
+  };
+
+  const handleUrlToggle = () => {
+    if (currentStream?.type === MediaStreamType.URI) {
+      stop();
+    } else {
+      activateUrlStream();
+    }
+  };
+
   const stop = () => {
     if (audioPlayer) {
       audioPlayer.pause();
@@ -102,42 +126,39 @@ export const Audio = ({ onChange }: AudioProviderProps) => {
 
   return (
     <div className="audio">
-      <IconButton onClick={stop} title="Stop" disabled={!currentStream}>
-        <PiStop size={size} />
-      </IconButton>
-
       <input ref={fileInputRef} type="file" accept="audio/*" style={{ display: 'none' }} onChange={handleFileChange} />
-      <IconButton
-        onClick={handleUploadClick}
-        title={fileName || 'Upload Audio File'}
-        disabled={currentStream?.type === MediaStreamType.FILE}
-      >
-        <PiUpload size={size} style={currentStream?.type === MediaStreamType.FILE ? { color: 'red' } : {}} />
-      </IconButton>
-
-      <IconButton
-        onClick={activateMicrophone}
+  
+      <IconToggleButton
+        activeIcon={PiRecordFill}
+        inactiveIcon={PiRecordDuotone}
+        isActive={currentStream?.type === MediaStreamType.MICROPHONE}
+        onClick={handleMicrophoneToggle}
         title="Record"
-        disabled={currentStream?.type === MediaStreamType.MICROPHONE}
-      >
-        {currentStream?.type === MediaStreamType.MICROPHONE ? (
-          <PiRecordFill size={size} style={{ color: 'red' }} />
-        ) : (
-          <PiRecordDuotone size={size} />
-        )}
-      </IconButton>
+        size={size}
+        className="recording"
+      />
+
+      <IconToggleButton
+        activeIcon={PiStop}
+        inactiveIcon={PiUpload}
+        isActive={currentStream?.type === MediaStreamType.FILE}
+        onClick={handleFileToggle}
+        title={fileName || 'Upload Audio File'}
+        size={size}
+      />
 
       <div className="url-stream">
         <div className="input-wrapper">
           <input value={url} onChange={e => setUrl(e.target.value)} />
         </div>
-        <IconButton onClick={activateUrlStream} title="Play" disabled={currentStream?.type === MediaStreamType.URI}>
-          {currentStream?.type === MediaStreamType.URI ? (
-            <PiPlayFill size={size} style={{ color: 'red' }} />
-          ) : (
-            <PiPlay size={size} />
-          )}
-        </IconButton>
+        <IconToggleButton
+          activeIcon={PiStop}
+          inactiveIcon={PiPlay}
+          isActive={currentStream?.type === MediaStreamType.URI}
+          onClick={handleUrlToggle}
+          title="Play"
+          size={size}
+        />
       </div>
     </div>
   );

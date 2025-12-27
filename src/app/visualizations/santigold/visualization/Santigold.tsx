@@ -2,6 +2,7 @@ import { SampleProvider } from '../../../audio/SampleProvider';
 import { Canvas } from '@react-three/fiber';
 import { GlitterParticles } from './GlitterParticles';
 import { OrbitControls } from '@react-three/drei';
+import { Suspense } from 'react';
 
 export interface SantigoldProps {
   sampleProvider: SampleProvider;
@@ -21,9 +22,11 @@ export const Santigold = ({ sampleProvider, canvas }: SantigoldProps) => {
           left: 0,
         }}
       >
-        <orthographicCamera position={[0, 0, 10]} zoom={1} />
-        <OrbitControls enabled={false} />
-        <GlitterParticles sampleProvider={sampleProvider} />
+        <Suspense fallback={null}>
+          <orthographicCamera position={[0, 0, 10]} zoom={1} />
+          <OrbitControls enabled={false} />
+          <GlitterParticles sampleProvider={sampleProvider} />
+        </Suspense>
       </Canvas>
     </div>
   );

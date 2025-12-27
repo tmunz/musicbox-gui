@@ -3,6 +3,10 @@
   flex-direction: column;
   align-items: end;
 
+  .icon-toggle-active > *:first-child {
+    color: red;
+  }
+
   .url-stream {
     display: flex;
     flex-direction: row;

@@ -1,0 +1,37 @@
+.collapsible-menubar-item {
+  --collapsible-menubar-item-transition-duration: 0.3s;
+
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  max-width: 100%;
+  z-index: 2;
+  pointer-events: none;
+      
+  & > * {
+    pointer-events: all;
+  }
+
+  .menu-item-content {
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+    opacity: 1;
+    transform-origin: bottom;
+    transition: width var(--collapsible-menubar-item-transition-duration), opacity var(--collapsible-menubar-item-transition-duration) ease-in-out;
+    display: flex;
+    flex-direction: column;
+
+    &.menu-item-content-hidden {
+      width: 0 !important;
+      opacity: 0;
+    }
+
+    .menu-item-content-wrapper {
+      overflow-y: auto;
+      overflow-x: hidden;
+      flex: 1;
+      min-height: 0;
+    }
+  }
+}

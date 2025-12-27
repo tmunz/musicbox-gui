@@ -1,7 +1,7 @@
 import './Carousel.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { PiCaretLeft, PiCaretRight } from 'react-icons/pi';
-import { IconButton } from '../IconButton';
+import { IconButton } from '../icon-button/IconButton';
 import { useAutoHide } from '../../utils/useAutoHide';
 import { CarouselItem } from './CarouselItem';
 import { CAROUSEL_TRANSITION_DURATION_CSS } from './CarouselConstants';

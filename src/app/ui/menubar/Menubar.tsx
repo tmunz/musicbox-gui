@@ -1,14 +1,14 @@
 import './Menubar.css';
 import React, { useRef, HTMLAttributes } from 'react';
-import { useAutoHide } from '../utils/useAutoHide';
-import { MenubarItemRef } from './MenubarItem';
+import { useAutoHide } from '../../utils/useAutoHide';
+import { CollapsibleMenubarItemRef } from './CollapsibleMenubarItem';
 
 interface MenubarProps extends HTMLAttributes<HTMLDivElement> {
   hideTimeout: number;
 }
 
 export const Menubar = ({ hideTimeout, children }: MenubarProps) => {
-  const childRefs = useRef<(MenubarItemRef | null)[]>([]);
+  const childRefs = useRef<(CollapsibleMenubarItemRef | null)[]>([]);
   const visible = useAutoHide(hideTimeout, () => !childRefs.current.some(ref => ref?.isActive?.() === true));
 
   return (
@@ -23,7 +23,7 @@ export const Menubar = ({ hideTimeout, children }: MenubarProps) => {
 
         if (canReceiveRef) {
           return React.cloneElement(child as React.ReactElement<any>, {
-            ref: (el: MenubarItemRef | null) => (childRefs.current[index] = el),
+            ref: (el: CollapsibleMenubarItemRef | null) => (childRefs.current[index] = el),
           });
         }
 

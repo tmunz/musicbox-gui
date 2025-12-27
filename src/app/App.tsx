@@ -4,12 +4,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { SampleProviderComponent } from './audio/SampleProviderComponent';
 import { useDimension } from './utils/useDimension';
 import visualizations from './visualizations';
-import { Menubar } from './ui/Menubar';
+import { Menubar } from './ui/menubar/Menubar';
 import { SettingsComponent } from './settings/SettingsComponent';
 import { useAppState, VisualizationAction } from './AppContext';
 import { Carousel } from './ui/carousel';
 import { VisualizationComponent } from './visualizations/VisualizationComponent';
-import { MenubarItem } from './ui/MenubarItem';
+import { CollapsibleMenubarItem } from './ui/menubar/CollapsibleMenubarItem';
 import { PiInfo, PiSlidersHorizontalDuotone } from 'react-icons/pi';
 import { VisualizationInfo } from './visualizations/VisualizationInfo';
 import { SampleProvider } from './audio/SampleProvider';
@@ -66,12 +66,12 @@ export function App() {
     <div className="musicbox" ref={elementRef} style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
       <Carousel items={items} selectedId={appState.visualization?.id} onSelect={selectVisualization} defaultFocus />
       <Menubar hideTimeout={3000}>
-        <MenubarItem icon={PiInfo}>
+        <CollapsibleMenubarItem icon={PiInfo}>
           <VisualizationInfo visualization={appState.visualization} />
-        </MenubarItem>
-        <MenubarItem icon={PiSlidersHorizontalDuotone}>
+        </CollapsibleMenubarItem>
+        <CollapsibleMenubarItem icon={PiSlidersHorizontalDuotone}>
           <SettingsComponent />
-        </MenubarItem>
+        </CollapsibleMenubarItem>
         <SampleProviderComponent
           onSampleProviderChange={setSampleProvider}
           {...Object.fromEntries(
