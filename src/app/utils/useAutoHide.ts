@@ -1,68 +1,54 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-export function useAutoHide(timeout: number = 3000, condition: () => boolean = () => true) {
+export function useAutoHide(timeout: number = 3000, shouldHide: boolean = true) {
   const [visible, setVisible] = useState(true);
-  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const conditionRef = useRef(condition);
-  const lastResetTime = useRef<number>(Date.now());
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastActivityRef = useRef<number>(Date.now());
 
-  conditionRef.current = condition;
-
-  const restartTimeout = useCallback(() => {
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current);
+  const clearCurrentTimeout = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
-    hideTimeoutRef.current = setTimeout(() => {
-      if (conditionRef.current()) {
+  };
+
+  const startTimeout = () => {
+    clearCurrentTimeout();
+    timeoutRef.current = setTimeout(() => {
+      if (shouldHide) {
         setVisible(false);
       }
     }, timeout);
-  }, [timeout]);
+  };
 
-  const resetVisibility = useCallback(() => {
+  const handleActivity = () => {
     const now = Date.now();
-    if (now - lastResetTime.current < 100) return;
+    if (now - lastActivityRef.current < 100) return; 
 
-    lastResetTime.current = now;
+    lastActivityRef.current = now;
     setVisible(true);
-    restartTimeout();
-  }, [restartTimeout]);
+    startTimeout();
+  };
 
-  const checkCondition = useCallback(() => {
-    const shouldHide = conditionRef.current();
-    if (!shouldHide && !visible) {
+
+  useEffect(() => {
+    if (!shouldHide) {
       setVisible(true);
-    } else if (!shouldHide && visible) {
-      if (hideTimeoutRef.current) {
-        clearTimeout(hideTimeoutRef.current);
-        hideTimeoutRef.current = null;
-      }
-    } else if (shouldHide && visible) {
-      restartTimeout();
+      clearCurrentTimeout();
+    } else {
+      startTimeout();
     }
-  }, [visible, restartTimeout]);
+  }, [shouldHide, timeout]);
 
   useEffect(() => {
-    checkCondition();
-  }, [condition, checkCondition]);
-
-  useEffect(() => {
-    const events = ['mousemove', 'pointerdown', 'keydown', 'scroll', 'touchstart'];
-    events.forEach(event => window.addEventListener(event, resetVisibility));
+    const events = ['mousemove', 'keydown', 'click'];
+    events.forEach(event => window.addEventListener(event, handleActivity, { passive: true }));
 
     return () => {
-      events.forEach(event => window.removeEventListener(event, resetVisibility));
-      if (hideTimeoutRef.current) {
-        clearTimeout(hideTimeoutRef.current);
-      }
+      events.forEach(event => window.removeEventListener(event, handleActivity));
+      clearCurrentTimeout();
     };
-  }, [resetVisibility]);
-
-  useEffect(() => {
-    if (visible) {
-      restartTimeout();
-    }
-  }, [visible, restartTimeout]);
+  }, []);
 
   return visible;
 }
