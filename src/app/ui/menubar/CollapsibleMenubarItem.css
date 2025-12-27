@@ -7,7 +7,7 @@
   max-width: 100%;
   z-index: 2;
   pointer-events: none;
-      
+
   & > * {
     pointer-events: all;
   }
@@ -18,7 +18,8 @@
     overflow: hidden;
     opacity: 1;
     transform-origin: bottom;
-    transition: width var(--collapsible-menubar-item-transition-duration), opacity var(--collapsible-menubar-item-transition-duration) ease-in-out;
+    transition: width var(--collapsible-menubar-item-transition-duration),
+      opacity var(--collapsible-menubar-item-transition-duration) ease-in-out;
     display: flex;
     flex-direction: column;
 

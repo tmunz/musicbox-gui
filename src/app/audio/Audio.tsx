@@ -127,7 +127,7 @@ export const Audio = ({ onChange }: AudioProviderProps) => {
   return (
     <div className="audio">
       <input ref={fileInputRef} type="file" accept="audio/*" style={{ display: 'none' }} onChange={handleFileChange} />
-  
+
       <IconToggleButton
         activeIcon={PiRecordFill}
         inactiveIcon={PiRecordDuotone}

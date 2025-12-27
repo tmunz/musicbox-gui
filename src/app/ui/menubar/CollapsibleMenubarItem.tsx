@@ -1,28 +1,25 @@
 import './CollapsibleMenubarItem.css';
-import { useState, useRef, forwardRef, useImperativeHandle, ReactNode, ComponentType, useEffect } from 'react';
+import { useState, useRef, ReactNode, ComponentType, useEffect } from 'react';
 import { IconBaseProps } from 'react-icons';
 import { PiX } from 'react-icons/pi';
 import { COLLAPSIBLE_MENUBAR_ITEM_TRANSITION_DURATION_MS } from './MenubarConstants';
 import { IconToggleButton } from '../icon-button/IconToggleButton';
 
-export interface CollapsibleMenubarItemRef {
-  isActive: () => boolean;
-}
-
 interface CollapsibleMenubarItemProps {
   icon: ComponentType<IconBaseProps>;
   children: ReactNode;
+  onActiveChange?: (isActive: boolean) => void;
 }
 
-export const CollapsibleMenubarItem = forwardRef<CollapsibleMenubarItemRef, CollapsibleMenubarItemProps>(({ children, icon: Icon }, ref) => {
+export const CollapsibleMenubarItem = ({ children, icon: Icon, onActiveChange }: CollapsibleMenubarItemProps) => {
   const [active, setActive] = useState(false);
   const [measuredWidth, setMeasuredWidth] = useState<number | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  useImperativeHandle(ref, () => ({
-    isActive: () => active,
-  }));
+  useEffect(() => {
+    onActiveChange?.(active);
+  }, [active, onActiveChange]);
 
   useEffect(() => {
     if (!contentRef.current || !wrapperRef.current) return;
@@ -36,15 +33,15 @@ export const CollapsibleMenubarItem = forwardRef<CollapsibleMenubarItemRef, Coll
         element.style.width = 'auto';
         element.style.position = 'absolute';
         element.style.visibility = 'hidden';
-        
+
         const width = wrapper.scrollWidth;
         setMeasuredWidth(width);
-        
+
         element.style.position = '';
         element.style.visibility = '';
         element.style.width = '0px';
         wrapper.style.width = `${width}px`;
-        
+
         requestAnimationFrame(() => {
           element.style.width = `${width}px`;
         });
@@ -66,20 +63,12 @@ export const CollapsibleMenubarItem = forwardRef<CollapsibleMenubarItemRef, Coll
 
   return (
     <div className="collapsible-menubar-item">
-      <div 
-        ref={contentRef}
-        className={`menu-item-content ${active ? '' : 'menu-item-content-hidden'}`}
-      >
+      <div ref={contentRef} className={`menu-item-content ${active ? '' : 'menu-item-content-hidden'}`}>
         <div ref={wrapperRef} className="menu-item-content-wrapper">
           {children}
         </div>
       </div>
-      <IconToggleButton 
-        activeIcon={PiX}
-        inactiveIcon={Icon}
-        isActive={active}
-        onClick={() => setActive(b => !b)}
-      />
+      <IconToggleButton activeIcon={PiX} inactiveIcon={Icon} isActive={active} onClick={() => setActive(b => !b)} />
     </div>
   );
-});
+};

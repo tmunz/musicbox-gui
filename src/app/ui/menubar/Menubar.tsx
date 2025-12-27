@@ -1,33 +1,35 @@
 import './Menubar.css';
-import React, { useRef, HTMLAttributes } from 'react';
+import React, { HTMLAttributes, useState, useCallback } from 'react';
 import { useAutoHide } from '../../utils/useAutoHide';
-import { CollapsibleMenubarItemRef } from './CollapsibleMenubarItem';
 
 interface MenubarProps extends HTMLAttributes<HTMLDivElement> {
   hideTimeout: number;
 }
 
 export const Menubar = ({ hideTimeout, children }: MenubarProps) => {
-  const childRefs = useRef<(CollapsibleMenubarItemRef | null)[]>([]);
-  const visible = useAutoHide(hideTimeout, () => !childRefs.current.some(ref => ref?.isActive?.() === true));
+  const [activeItems, setActiveItems] = useState<Set<number>>(new Set());
+  const visible = useAutoHide(hideTimeout, () => activeItems.size === 0);
+
+  const updateActiveState = useCallback((index: number, isActive: boolean) => {
+    setActiveItems(prev => {
+      const newSet = new Set(prev);
+      if (isActive) {
+        newSet.add(index);
+      } else {
+        newSet.delete(index);
+      }
+      return newSet;
+    });
+  }, []);
 
   return (
     <div className={`menubar ${visible ? 'visible' : 'hidden'}`}>
       {React.Children.map(children, (child, index) => {
         if (!React.isValidElement(child)) return child;
-
-        const childType = child.type as any;
-        const canReceiveRef =
-          typeof childType === 'function' &&
-          (childType.$$typeof === Symbol.for('react.forward_ref') || childType.prototype?.isReactComponent);
-
-        if (canReceiveRef) {
-          return React.cloneElement(child as React.ReactElement<any>, {
-            ref: (el: CollapsibleMenubarItemRef | null) => (childRefs.current[index] = el),
-          });
-        }
-
-        return child;
+        return React.cloneElement(child, {
+          ...child.props,
+          onActiveChange: (isActive: boolean) => updateActiveState(index, isActive),
+        });
       })}
     </div>
   );

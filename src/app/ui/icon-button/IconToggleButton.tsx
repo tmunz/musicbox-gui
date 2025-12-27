@@ -13,18 +13,18 @@ interface IconToggleButtonProps {
   size?: number;
 }
 
-export const IconToggleButton = ({ 
-  activeIcon: ActiveIcon, 
-  inactiveIcon: InactiveIcon, 
-  isActive, 
-  onClick, 
-  className = '', 
+export const IconToggleButton = ({
+  activeIcon: ActiveIcon,
+  inactiveIcon: InactiveIcon,
+  isActive,
+  onClick,
+  className = '',
   title,
-  size = 36 
+  size = 36,
 }: IconToggleButtonProps) => {
   return (
-    <IconButton 
-      className={`icon-toggle-button ${isActive ? 'icon-toggle-active' : ''} ${className}`} 
+    <IconButton
+      className={`icon-toggle-button ${isActive ? 'icon-toggle-active' : ''} ${className}`}
       onClick={onClick}
       title={title}
     >
